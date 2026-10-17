@@ -13,7 +13,10 @@ async function request<T>(page: Page, path: string, method = 'GET', body?: objec
     async ({ path, method, body }) => {
       const response = await fetch('/api' + path, {
         method,
-        headers: { 'Content-Type': 'application/json', 'x-csrf-protection': '1' },
+        headers: {
+          'x-csrf-protection': '1',
+          ...(body ? { 'Content-Type': 'application/json' } : {})
+        },
         ...(body ? { body: JSON.stringify(body) } : {})
       });
       return { status: response.status, body: await response.json() };
@@ -120,6 +123,7 @@ test('real shop journey: cart, priced checkout, mock pay, cancellation and user 
     await register(bob, bobEmail, 'Bob acceptance');
     await bob.goto('/shop/orders');
     await expect(bob.locator('article.order-card')).toHaveCount(0);
+    expect((await request<ApiResponse<OrderView[]>>(bob, '/shop/orders')).body.data).toEqual([]);
     expect((await request(bob, '/shop/orders/' + first.orderNo + '/cancel', 'POST')).status).toBe(
       404
     );
