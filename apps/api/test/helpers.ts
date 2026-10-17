@@ -47,6 +47,7 @@ export async function fixture(production = false) {
   return {
     app,
     db,
+    url,
     async close() {
       await app.close();
       await db.$disconnect();

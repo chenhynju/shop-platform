@@ -156,7 +156,7 @@ describe('real database authentication and authorization', () => {
     ctx.app = await buildApp({
       db: ctx.db,
       logger: false,
-      env: { NODE_ENV: 'test', DATABASE_URL: 'file:test.db', APP_ORIGIN: 'http://localhost:3000' }
+      env: { NODE_ENV: 'test', DATABASE_URL: ctx.url, APP_ORIGIN: 'http://localhost:3000' }
     });
     const res = await ctx.app.inject({ url: '/api/projects', headers: { cookie: alice } });
     expect(res.json().data[0]).toMatchObject({ title: 'Template shipped', status: 'DONE' });

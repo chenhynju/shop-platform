@@ -16,10 +16,11 @@ describe('fail-closed configuration', () => {
   it('requires database config and valid bounded ports', () => {
     for (const env of [
       {},
-      { DATABASE_URL: 'file:test.db', PORT: '0' },
-      { DATABASE_URL: 'file:test.db', PORT: '70000' },
-      { DATABASE_URL: 'postgres://wrong' },
-      { DATABASE_URL: 'file:test.db', NODE_ENV: 'oops' }
+      { DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/shop', PORT: '0' },
+      { DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/shop', PORT: '70000' },
+      { DATABASE_URL: 'postgresql://localhost' },
+      { DATABASE_URL: 'file:test.db' },
+      { DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/shop', NODE_ENV: 'oops' }
     ])
       expect(() => readConfig(env)).toThrow();
   });
@@ -31,15 +32,25 @@ describe('fail-closed configuration', () => {
       'https://user:secret@example.com'
     ])
       expect(() =>
-        readConfig({ NODE_ENV: 'production', DATABASE_URL: 'file:test.db', APP_ORIGIN })
+        readConfig({
+          NODE_ENV: 'production',
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/shop',
+          APP_ORIGIN
+        })
       ).toThrow();
     expect(
       readConfig({
         NODE_ENV: 'production',
-        DATABASE_URL: 'file:test.db',
+        DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/shop',
         APP_ORIGIN: 'https://example.com'
       }).APP_ORIGIN
     ).toBe('https://example.com');
-    expect(readConfig({ DATABASE_URL: 'file:test.db' }).PORT).toBe(3001);
+    expect(
+      readConfig({ DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/shop' }).PORT
+    ).toBe(3001);
   });
+});
+
+it('accepts the postgres URL alias', () => {
+  expect(readConfig({ DATABASE_URL: 'postgres://localhost/shop' }).PORT).toBe(3001);
 });

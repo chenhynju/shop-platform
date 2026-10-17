@@ -17,3 +17,12 @@ packages/db/prisma/dev.db
 *.db-journal
 *.db-shm
 *.db-wal
+
+# Private host operations and backups
+/releases/
+/shared/
+/backups/
+/shop-ops-*.log
+*.env
+*.dump
+*.rdb
