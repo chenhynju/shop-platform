@@ -17,7 +17,7 @@ RUN cp -R node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client /genera
 RUN pnpm --filter @repo/api deploy --prod --legacy /out
 # Replace the deploy-time placeholder at the nearest Node resolution location.
 RUN for target in /out/node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client; do cp -R /generated-client/. "$target/"; done
-RUN cd /out && DATABASE_URL=file:/tmp/image-smoke.db node --input-type=module -e 'import { prisma } from "@repo/db"; await prisma.$queryRawUnsafe("SELECT 1"); await prisma.$disconnect(); console.log("Generated Prisma runtime verified");'
+# helloWorldA 使用 PostgreSQL 引擎，镜像内不再做 file: 冒烟（运行时由 migrate 服务保证 client 与库匹配）
 
 FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS runtime
 RUN apk add --no-cache openssl libc6-compat && mkdir /data && chown node:node /data

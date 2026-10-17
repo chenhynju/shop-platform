@@ -1,0 +1,99 @@
+# helloWorldA 高并发电商平台 —— 生产 compose（服务器）
+# 端口：web 3280 / api 3281（仅回环，由 Caddy 提供 HTTPS）
+name: shop-platform
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: shop
+    volumes:
+      - shop-pg-data:/var/lib/postgresql/data
+    mem_limit: 256m
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d shop']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - shop-redis-data:/data
+    mem_limit: 128m
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    image: shop-platform-api:${RELEASE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+      target: migrate
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?}
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+    mem_limit: 384m
+
+  api:
+    image: shop-platform-api:${RELEASE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?}
+      REDIS_URL: redis://redis:6379
+      APP_ORIGIN: ${APP_ORIGIN:?}
+      TRUST_PROXY: 172.16.0.0/12
+    ports:
+      - '127.0.0.1:3281:3001'
+    depends_on:
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: '3' }
+
+  web:
+    image: shop-platform-web:${RELEASE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+      args:
+        API_INTERNAL_URL: http://api:3001
+    ports:
+      - '127.0.0.1:3280:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: '3' }
+
+volumes:
+  shop-pg-data:
+  shop-redis-data:
