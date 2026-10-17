@@ -36,3 +36,5 @@ pnpm dev
 支付仅为模拟。源码定义了延迟取消 worker，但当前 API 入口没有启动该 worker，不能承诺自动超时取消；手动取消是独立流程。尚不宣称真实支付对账、高可用、异地灾难恢复或线上吞吐 SLA。商城主要使用英语，继承的账号页面提供中英文切换。
 
 旧 toolkit 文档是背景资料，涉及 SQLite、toolkit 端口及部署目录的命令不适用于商城。本 README 和 `docs/shop-deployment.md` 为商城环境的当前依据。
+
+[2026-10-18 deployment and acceptance record](docs/operations-20261018.md)

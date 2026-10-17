@@ -51,3 +51,5 @@ Production uses `/opt/shop-platform`, Compose project `shop-platform`, ports 328
 Mock payment is not a payment-provider integration. The current source defines a delayed cancellation worker but does not start it from the API entry point; automatic order expiry is not an operational guarantee. Manual cancellation is a distinct tested flow. No HA, external alert delivery, off-host disaster recovery or real checkout throughput SLA is claimed. Storefront copy is primarily English; the inherited account interface has English/Chinese localization.
 
 The older toolkit adoption/manual documents are inherited background material. This README and `docs/shop-deployment.md` are authoritative for the shop's PostgreSQL/Redis setup; SQLite/toolkit deployment instructions do not apply here.
+
+[2026-10-18 deployment and acceptance record](docs/operations-20261018.md)
