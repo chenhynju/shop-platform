@@ -7,7 +7,7 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
       <ShopNav />
       <main className="shop-main">{children}</main>
       <footer className="shop-footer">
-        <span>helloWorldA / store</span>
+        <span>helloWorldA / store · release v2</span>
         <span>Next.js · Fastify · Prisma · Turborepo</span>
         <span>Built for what comes next. ↗</span>
       </footer>
