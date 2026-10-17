@@ -32,7 +32,9 @@ services:
       retries: 10
 
   migrate:
-    image: shop-platform-api:${RELEASE_TAG:-local}
+    # 注意：migrate 与 api 必须使用不同镜像名——compose 对同名 image 只构建一次，
+    # runtime target 会覆盖 migrate target 的 CMD
+    image: shop-platform-migrate:${RELEASE_TAG:-local}
     build:
       context: ..
       dockerfile: docker/Dockerfile.api
