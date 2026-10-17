@@ -1,5 +1,7 @@
 # Deploy and operate
 
+> Shop operators: use [shop-deployment.md](shop-deployment.md). This inherited toolkit runbook describes a separate SQLite application and is not the current shop deployment procedure.
+
 ## Prerequisites
 
 Docker with Compose/BuildKit, a host with enough build memory and disk, an unused HTTPS hostname, DNS pointing to the host, and an existing Caddy installation. This is a single-instance SQLite deployment. Node 22 and pnpm are only needed on the developer/CI machine; containers provide runtimes.

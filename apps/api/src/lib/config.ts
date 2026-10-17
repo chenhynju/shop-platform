@@ -16,9 +16,13 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env) {
     throw new Error('APP_ORIGIN must be an exact origin without credentials or path');
   if (config.NODE_ENV === 'production' && (url.protocol !== 'https:' || !env.APP_ORIGIN))
     throw new Error('Production requires an explicit HTTPS APP_ORIGIN');
-  // helloWorldA 使用 PostgreSQL（并发写是电商刚需）；保留 file: 兼容底座演示
-  if (!config.DATABASE_URL.startsWith('file:') && !config.DATABASE_URL.startsWith('postgresql://'))
-    throw new Error('DATABASE_URL must start with file: or postgresql://');
+  const database = new URL(config.DATABASE_URL);
+  if (
+    !['postgresql:', 'postgres:'].includes(database.protocol) ||
+    !database.hostname ||
+    database.pathname.length < 2
+  )
+    throw new Error('DATABASE_URL must be a PostgreSQL URL with a host and database name');
   return config;
 }
 export type AppConfig = ReturnType<typeof readConfig>;

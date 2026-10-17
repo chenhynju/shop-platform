@@ -16,7 +16,8 @@ jobs:
     environment: production
     timeout-minutes: 45
     env:
-      DATABASE_URL: file:./deploy-ci.db
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/shop
+      REDIS_URL: redis://localhost:6379
       APP_ORIGIN: http://localhost:3000
       API_INTERNAL_URL: http://127.0.0.1:3001
       NEXT_TELEMETRY_DISABLED: '1'
@@ -24,6 +25,28 @@ jobs:
       ADMIN_PASSWORD: deploy-ci-only-ephemeral-294762
       E2E_ADMIN_EMAIL: deploy-ci-admin@example.com
       E2E_ADMIN_PASSWORD: deploy-ci-only-ephemeral-294762
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shop
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d shop"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -33,9 +56,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
+      - run: pnpm db:migrate
       - run: pnpm lint && pnpm typecheck && pnpm test
       - run: pnpm audit --prod --audit-level=high
-      - run: pnpm db:migrate && pnpm db:seed
+      - run: pnpm db:seed
+      - run: pnpm build
       - run: pnpm --filter @repo/web exec playwright install --with-deps chromium
       - run: pnpm e2e && node --test scripts/tests/check-budget.test.mjs && pnpm size-check
       - name: Package source
@@ -58,7 +83,7 @@ jobs:
           test -n "$DEPLOY_HOST" && test -n "$DEPLOY_USER"
           echo "$RELEASE_HOSTNAME" | grep -Eq '^[a-zA-Z0-9.-]+$'
           RELEASE_ID="${GITHUB_SHA:0:12}-$GITHUB_RUN_ID"
-          scp release.tgz "$DEPLOY_USER@$DEPLOY_HOST:/tmp/toolkit-$RELEASE_ID.tgz"
+          scp release.tgz "$DEPLOY_USER@$DEPLOY_HOST:/tmp/shop-$RELEASE_ID.tgz"
           ssh "$DEPLOY_USER@$DEPLOY_HOST" bash -s -- "$RELEASE_ID" "$RELEASE_HOSTNAME" < scripts/release.sh
       - uses: actions/upload-artifact@v4
         if: always()
