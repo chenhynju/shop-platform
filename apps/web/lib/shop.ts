@@ -3,8 +3,9 @@ import type { PromotionInfo } from '@repo/types';
 // Dispatched on window after any cart mutation so the nav badge can refetch.
 export const CART_CHANGED_EVENT = 'shop:cart-changed';
 
+// 商品价格按人民币（分）定价与展示；英文界面沿用同一金额口径。
 export function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`;
+  return `¥${(cents / 100).toFixed(2)}`;
 }
 
 // Mirrors the promotion math of the order API so the cart page can show an estimate.
