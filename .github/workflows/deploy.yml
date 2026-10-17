@@ -1,0 +1,67 @@
+name: Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      hostname:
+        description: Existing authorized HTTPS hostname
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 45
+    env:
+      DATABASE_URL: file:./deploy-ci.db
+      APP_ORIGIN: http://localhost:3000
+      API_INTERNAL_URL: http://127.0.0.1:3001
+      NEXT_TELEMETRY_DISABLED: '1'
+      ADMIN_EMAIL: deploy-ci-admin@example.com
+      ADMIN_PASSWORD: deploy-ci-only-ephemeral-294762
+      E2E_ADMIN_EMAIL: deploy-ci-admin@example.com
+      E2E_ADMIN_PASSWORD: deploy-ci-only-ephemeral-294762
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint && pnpm typecheck && pnpm test
+      - run: pnpm audit --prod --audit-level=high
+      - run: pnpm db:migrate && pnpm db:seed
+      - run: pnpm --filter @repo/web exec playwright install --with-deps chromium
+      - run: pnpm e2e && node --test scripts/tests/check-budget.test.mjs && pnpm size-check
+      - name: Package source
+        run: python scripts/package_release.py release.tgz
+      - name: Install SSH credentials
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Upload and release
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          RELEASE_HOSTNAME: ${{ inputs.hostname }}
+        run: |
+          test -n "$DEPLOY_HOST" && test -n "$DEPLOY_USER"
+          echo "$RELEASE_HOSTNAME" | grep -Eq '^[a-zA-Z0-9.-]+$'
+          RELEASE_ID="${GITHUB_SHA:0:12}-$GITHUB_RUN_ID"
+          scp release.tgz "$DEPLOY_USER@$DEPLOY_HOST:/tmp/toolkit-$RELEASE_ID.tgz"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" bash -s -- "$RELEASE_ID" "$RELEASE_HOSTNAME" < scripts/release.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deploy-browser-report
+          path: apps/web/playwright-report

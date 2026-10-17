@@ -1,0 +1,160 @@
+{
+  "en": {
+    "title": "User and project adoption manual",
+    "intro": "fullstack-toolkit is a reusable project foundation and a working private-project example. English is the default working language; Simplified Chinese is available from the language selector. Each adopted product keeps its own domain, data, credentials and authorization model. This is not a shared login service for all your products.",
+    "sections": [
+      {
+        "id": "start",
+        "title": "1. Create an account and sign in",
+        "steps": [
+          "Open the workspace homepage. Under Create account, enter your name, a valid email address and a unique password of 12–128 characters, then choose Create account. Registration signs you in as USER.",
+          "For an existing account, choose Sign in, enter the same email/password and submit. A wrong password produces an error message; use the request ID when asking an operator for help.",
+          "Your session can last up to seven days. Sign out when finished, especially on a shared device. Sign out revokes the current session on the server; closing a browser tab alone does not.",
+          "Email verification and password recovery are not implemented. Do not use an important account password. Ask the product operator about recovery before storing important data."
+        ]
+      },
+      {
+        "id": "projects",
+        "title": "2. Manage your private projects",
+        "steps": [
+          "Choose + New project. Enter a title (1–120 characters), optional description (up to 2000 characters) and a status, then choose Create project. The card appears in Planned, In progress or Completed.",
+          "Choose Edit on a card to change its title, description or status. Choose Save changes, then refresh to verify the saved result. Cancel closes the form without saving.",
+          "Search projects filters the loaded titles and descriptions. The application displays the newest 100 projects. Overview counts refer to loaded projects; they are not an unlimited reporting system.",
+          "Choose Delete, then confirm the browser dialog. Deletion is permanent in the application; Cancel leaves the project in place. There is no recycle bin.",
+          "Projects belong to their creating account. Another account cannot read, edit or delete them, even by entering a known project URL or sending a request directly. No project sharing or organization membership is provided by this example."
+        ]
+      },
+      {
+        "id": "language",
+        "title": "3. Work in English or Simplified Chinese",
+        "steps": [
+          "Use the header language selector to choose English or 简体中文. English remains the default for a new visitor, regardless of the browser's preferred language.",
+          "The choice is stored in a non-sensitive preference cookie for one year and restored on refresh, including on the manual page. It does not change your account, session, project IDs or access rights.",
+          "Interface copy, form labels, status names, notifications, supported API error codes and date presentation change language. Your project names/descriptions and other user-entered content are never automatically translated.",
+          "API field names, enum values, error codes, request IDs, logs and source identifiers remain in English. New products can reuse @toolkit/i18n while owning their own message catalogs."
+        ]
+      },
+      {
+        "id": "members",
+        "title": "4. Administrator access",
+        "steps": [
+          "New accounts are always USER. There is no public default administrator, role selector during registration or browser action for promoting accounts.",
+          "An explicitly provisioned ADMIN sees Members in the sidebar. Open it to inspect the newest 100 members, then choose Back to projects. This screen is a directory, not a user/role editing console.",
+          "Operators provision a new administrator through pnpm db:seed with explicit ADMIN_EMAIL and a unique ADMIN_PASSWORD of 16–128 characters in a private operator environment. The command refuses to overwrite an existing account. Remove bootstrap variables afterward and never put credentials in source, CI logs or tickets.",
+          "USER cannot access the member directory API. Hiding a menu is only presentation: the actual role check is performed by the API."
+        ]
+      },
+      {
+        "id": "adopt",
+        "title": "5. Start the next project",
+        "steps": [
+          "Use a fresh copy of the template source. Keep the original project's files, database and deployment intact. Install Node 22.14+ and the package.json-pinned pnpm version; copy .env.example to a private .env.",
+          "Run node scripts/init-project.mjs my-product, pnpm install --frozen-lockfile and pnpm db:migrate, then pnpm dev. The initializer changes the root name/README title and creates .env only if missing; it does not create a remote repository.",
+          "For an existing database, follow docs/deployment.md's backup and verified-schema baseline procedure. Never use database reset, copy a production database into a template or invent passwords for legacy users.",
+          "Add domain fields through migrations, shared API contracts and server authorization. Reuse the working project workflow as a pattern. If the existing product already has tenant/role rules, preserve those rules; do not substitute this example's simpler owner-only model.",
+          "Run format:check, lint, typecheck, test, build, size-check and e2e. Use disposable test databases/accounts. E2E creates data; do not point it at a customer deployment by accident. Refer to docs/reuse.md and docs/i18n.md for extension details."
+        ]
+      },
+      {
+        "id": "operate",
+        "title": "6. Deploy and operate",
+        "steps": [
+          "Every project needs a unique HTTPS origin, Compose project name, volume, host ports and private environment. Copying another project's credentials or reusing its data volume is not infrastructure reuse.",
+          "Set APP_ORIGIN to the exact HTTPS origin and run docker compose --env-file /secure/runtime.env -f docker/docker-compose.yml up -d --build. On a shared server, first choose unused loopback ports and a separate Compose project name/paths, and configure only the new hostname in the reverse proxy.",
+          "This release uses SQLite on one instance. /api/health checks process liveness; /api/ready queries the database. A green health endpoint is not proof that login, permissions or business operations work.",
+          "Before migration, stop this project's writer and back up its complete data volume. Test restoration into a separate disposable volume. Keep protected backups off-host with a retention policy. Never run compose down -v on a live deployment.",
+          "Keep immutable source/images and a per-release environment file. Roll back code only against a compatible schema; schema recovery requires a verified backup and matching application version. See docs/deployment.md and docs/verification.md. GitHub workflows require a real repository, secrets and Environment policies before they can run."
+        ]
+      },
+      {
+        "id": "help",
+        "title": "7. Troubleshooting and limits",
+        "steps": [
+          "API unavailable: check connectivity, the API/ready endpoint, runtime environment and proxy route. Do not disable TLS verification or expose the database to make the indicator green.",
+          "401: sign in again. 403: check the current role and allowed Origin/CSRF configuration. 404 for another user's project is deliberate. 409 usually means a duplicate record. 429 means wait before retrying.",
+          "When reporting an error, include the page/action, time, request ID and expected result. Do not send passwords, cookies, access tokens, environment files or customer documents.",
+          "This version does not provide email recovery, SSO across products, team project sharing, online subscriptions, HA, PostgreSQL multi-replica operation, uptime guarantees or automated off-host backups. The InvoiceFlow pilot validates reuse in an isolated local environment; it does not silently migrate the existing InvoiceFlow production service."
+        ]
+      }
+    ]
+  },
+  "zh-CN": {
+    "title": "用户操作与项目接入手册",
+    "intro": "fullstack-toolkit 是可复用的工程底座，并带有可操作的私人项目示例。英语为默认工作语言，可通过语言选择器切换简体中文。接入后的产品各自保留域名、数据、凭据与权限模型；它不是所有产品共用的统一登录服务。",
+    "sections": [
+      {
+        "id": "start",
+        "title": "1. 创建账号与登录",
+        "steps": [
+          "打开工作空间首页，在“创建账号”下填写姓名、有效邮箱和 12–128 个字符的独立密码，然后提交。注册后以普通用户 USER 身份登录。",
+          "已有账号请选择“登录”，使用原邮箱和密码。密码错误会显示提示；需要联系操作者时，请保留请求编号。",
+          "会话最长有效七天。使用完毕后请退出登录，尤其是在共用设备上。退出会在服务端撤销当前会话；仅关闭浏览器标签页不会撤销会话。",
+          "当前没有邮箱验证与找回密码流程。不要复用重要账号的密码；在保存重要数据之前，先与产品操作者确认恢复办法。"
+        ]
+      },
+      {
+        "id": "projects",
+        "title": "2. 管理私人项目",
+        "steps": [
+          "点击“+ 新建项目”，填写 1–120 个字符的名称、最多 2000 个字符的可选描述及状态，然后点击“创建项目”。卡片会出现在计划中、进行中或已完成栏目。",
+          "点击卡片上的“编辑”修改名称、描述或状态，保存后刷新确认数据仍然存在。“取消”只关闭表单，不保存修改。",
+          "搜索框对已加载项目的名称和描述进行筛选。页面最多显示最近 100 个项目；概览统计也是这些已加载项目的统计，并非无限量报表。",
+          "点击“删除”并在浏览器确认框中确认。应用内没有回收站，删除不可撤销；取消确认则保留项目。",
+          "项目归创建账号所有。其他账号即使知道项目 ID，也不能查询、修改或删除。本示例不提供项目共享或组织成员功能。"
+        ]
+      },
+      {
+        "id": "language",
+        "title": "3. 使用英语或简体中文",
+        "steps": [
+          "在顶部语言选择器中选择 English 或简体中文。新访客始终默认使用英语，不跟随浏览器语言自动改为中文。",
+          "语言选择保存为有效一年的非敏感偏好 Cookie，刷新和进入手册页后仍会恢复。切换语言不改变账号、会话、项目 ID 或访问权限。",
+          "界面文案、表单标签、状态名称、通知、已知 API 错误码对应的提示与日期格式会切换语言。项目名称、描述等用户内容不会被自动翻译。",
+          "API 字段、枚举值、错误码、请求编号、日志和代码标识符保持英语。新产品可复用 @toolkit/i18n，并维护自己的业务词典。"
+        ]
+      },
+      {
+        "id": "members",
+        "title": "4. 管理员权限",
+        "steps": [
+          "新账号一律为 USER。没有公开默认管理员、注册时选择角色或浏览器中提升角色的功能。",
+          "经操作者显式配置的 ADMIN 可在侧栏打开“成员”，查看最近 100 位成员，再返回项目。该页面仅为目录，不是修改用户或角色的管理后台。",
+          "操作者在私有环境中明确设置 ADMIN_EMAIL 与 16–128 个字符的独立 ADMIN_PASSWORD，再运行 pnpm db:seed 创建新管理员。已有账号不会被覆盖。配置完成后移除引导变量，禁止将凭据写入源码、CI 日志或工单。",
+          "普通用户无法访问成员目录 API。隐藏菜单只是展示，真正的角色检查在 API 服务端执行。"
+        ]
+      },
+      {
+        "id": "adopt",
+        "title": "5. 开始下一个项目",
+        "steps": [
+          "从模板源码创建一份新副本，保留原项目文件、数据库与部署。安装 Node 22.14+ 和 package.json 锁定的 pnpm，将 .env.example 复制为私有 .env。",
+          "运行 node scripts/init-project.mjs my-product、pnpm install --frozen-lockfile、pnpm db:migrate，然后 pnpm dev。初始化器只修改根名称/README 标题并在缺失时创建 .env，不创建远程仓库。",
+          "已有数据库必须按 docs/deployment.md 先备份并核实迁移基线。不要 reset 数据库、把生产数据库复制进模板，或为旧用户凭空生成密码。",
+          "通过迁移、共享 API 契约和服务端授权添加业务字段。可参考项目示例的完整链路；已有产品的租户/角色规则应保留，不能用示例中更简单的个人归属模型替换。",
+          "执行 format:check、lint、typecheck、test、build、size-check 和 e2e。使用可丢弃测试数据库与账号；E2E 会创建数据，禁止误连客户环境。扩展细节见 docs/reuse.md 和 docs/i18n.md。"
+        ]
+      },
+      {
+        "id": "operate",
+        "title": "6. 部署与运维",
+        "steps": [
+          "每个项目使用独立 HTTPS Origin、Compose 项目名、数据卷、宿主机端口和私有环境。复制其他项目的凭据或复用其数据卷，不属于基础设施复用。",
+          "设置 APP_ORIGIN 为精确的 HTTPS Origin，执行 docker compose --env-file /secure/runtime.env -f docker/docker-compose.yml up -d --build。共用服务器上要先选择未占用的回环端口、独立 Compose 名称与目录，只配置新域名的代理。",
+          "本版本使用 SQLite 单实例。/api/health 检查进程存活，/api/ready 查询数据库。健康检查为绿，不代表登录、权限与业务已经验证。",
+          "迁移前停掉本项目写入进程并备份完整数据卷，在独立临时卷中验证恢复。重要备份应异地保存并设置保留策略。线上禁止执行 compose down -v。",
+          "保留不可变源码/镜像及每个发布版本的环境文件。仅在兼容数据库结构时回滚代码；结构恢复需要已验证备份和对应应用版本。见 docs/deployment.md 与 docs/verification.md。GitHub 工作流还需要真实仓库、Secrets 和 Environment 策略才能运行。"
+        ]
+      },
+      {
+        "id": "help",
+        "title": "7. 排错与能力边界",
+        "steps": [
+          "API 不可用时检查网络、API/ready、运行环境和代理路由。不要关闭 TLS 校验或公开数据库来消除红色提示。",
+          "401：重新登录。403：检查角色以及 Origin/CSRF 配置。其他账号的项目返回 404 是预期行为。409 通常表示记录重复；429 表示请求过于频繁，请稍后重试。",
+          "报错时提供页面/操作、时间、请求编号与预期结果。不要发送密码、Cookie、令牌、环境文件或客户文档。",
+          "当前不提供找回密码、跨产品 SSO、团队项目共享、在线订阅、多机高可用、PostgreSQL 多副本、可用性保证或自动异地备份。InvoiceFlow 试点在本地隔离环境验证复用，不会悄悄迁移现有 InvoiceFlow 生产服务。"
+        ]
+      }
+    ]
+  }
+}

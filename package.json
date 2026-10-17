@@ -1,0 +1,32 @@
+{
+  "name": "fullstack-toolkit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo 工程模板：Next.js + Fastify + Turborepo + pnpm，内置质量门禁、性能预算与 CI/CD",
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": ">=22.14"
+  },
+  "scripts": {
+    "dev": "node scripts/run.mjs turbo run dev",
+    "build": "node scripts/run.mjs turbo run build",
+    "lint": "node scripts/run.mjs turbo run lint",
+    "typecheck": "node scripts/run.mjs turbo run typecheck",
+    "test": "node scripts/run.mjs turbo run test",
+    "e2e": "node scripts/run.mjs turbo run e2e",
+    "analyze": "node scripts/run.mjs turbo run analyze",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "size-check": "node scripts/check-budget.mjs",
+    "db:push": "node scripts/run.mjs pnpm --filter @repo/db db:push",
+    "db:seed": "node scripts/run.mjs pnpm --filter @repo/db seed",
+    "db:studio": "node scripts/run.mjs pnpm --filter @repo/db db:studio",
+    "postinstall": "node scripts/run.mjs pnpm --filter @repo/db build && pnpm --filter @toolkit/i18n build",
+    "db:migrate": "node scripts/run.mjs pnpm --filter @repo/db db:migrate"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.3"
+  }
+}

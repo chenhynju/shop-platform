@@ -1,0 +1,62 @@
+name: fullstack-toolkit
+services:
+  migrate:
+    image: fullstack-toolkit-migrate:${RELEASE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+      target: migrate
+    environment:
+      DATABASE_URL: file:/data/toolkit.db
+    command: sh -c "pnpm --filter @repo/db db:migrate && chown -R 1000:1000 /data"
+    volumes:
+      - toolkit-data:/data
+    restart: 'no'
+    mem_limit: 384m
+  api:
+    image: fullstack-toolkit-api:${RELEASE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:/data/toolkit.db
+      APP_ORIGIN: ${APP_ORIGIN:?Set an explicit HTTPS APP_ORIGIN}
+      TRUST_PROXY: 172.16.0.0/12
+    ports:
+      - '127.0.0.1:${API_PORT:-3181}:3001'
+    volumes:
+      - toolkit-data:/data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: '3' }
+  web:
+    image: fullstack-toolkit-web:${RELEASE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+      args:
+        API_INTERNAL_URL: http://api:3001
+    ports:
+      - '127.0.0.1:${WEB_PORT:-3180}:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: '3' }
+volumes:
+  toolkit-data:

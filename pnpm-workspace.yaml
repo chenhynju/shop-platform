@@ -1,0 +1,19 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# pnpm 11+：允许执行构建脚本的依赖白名单（构建脚本由 pnpm 安全策略默认拦截）
+# 依赖升级后若出现 ERR_PNPM_IGNORED_BUILDS，将报错列出的包补充到此处即可
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  esbuild: true
+  prisma: true
+
+# Security patches for transitive Next/Prisma tooling dependencies.
+overrides:
+  postcss: '>=8.5.23 <9'
+  deepmerge-ts: '^8.0.0'
+
+# Fail clearly instead of mutating node_modules during lint/test/build.
+verifyDepsBeforeRun: error

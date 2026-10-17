@@ -1,0 +1,38 @@
+// Single-instance SQLite baseline; see ADR 0004.
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
+}
+model User {
+  id Int @id @default(autoincrement())
+  email String @unique
+  name String?
+  createdAt DateTime @default(now())
+  passwordHash String?
+  role String @default("USER")
+  sessions Session[]
+  projects Project[]
+}
+model Session {
+  id String @id @default(cuid())
+  tokenHash String @unique
+  userId Int
+  expiresAt DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([expiresAt])
+}
+model Project {
+  id String @id @default(cuid())
+  title String
+  description String @default("")
+  status String @default("PLANNED")
+  ownerId Int
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([ownerId, createdAt])
+}

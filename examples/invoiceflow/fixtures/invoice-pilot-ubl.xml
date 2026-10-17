@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic parser/financial arithmetic fixture; not a tax-validity or XSD-conformance claim. -->
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+ xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+ xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+ <cbc:ID>TOOLKIT-PILOT-001</cbc:ID>
+ <cbc:IssueDate>2026-10-17</cbc:IssueDate>
+ <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+ <cac:AccountingSupplierParty><cac:Party><cac:PartyName><cbc:Name>Toolkit Supplier</cbc:Name></cac:PartyName></cac:Party></cac:AccountingSupplierParty>
+ <cac:TaxTotal><cbc:TaxAmount currencyID="EUR">380.00</cbc:TaxAmount></cac:TaxTotal>
+ <cac:LegalMonetaryTotal>
+  <cbc:LineExtensionAmount currencyID="EUR">2000.00</cbc:LineExtensionAmount>
+  <cbc:TaxExclusiveAmount currencyID="EUR">2000.00</cbc:TaxExclusiveAmount>
+  <cbc:TaxInclusiveAmount currencyID="EUR">2380.00</cbc:TaxInclusiveAmount>
+  <cbc:PayableAmount currencyID="EUR">2380.00</cbc:PayableAmount>
+ </cac:LegalMonetaryTotal>
+ <cac:InvoiceLine>
+  <cbc:ID>1</cbc:ID><cbc:InvoicedQuantity>6</cbc:InvoicedQuantity>
+  <cbc:LineExtensionAmount currencyID="EUR">1200.00</cbc:LineExtensionAmount>
+  <cac:Item><cbc:Description>Hosting</cbc:Description></cac:Item>
+  <cac:Price><cbc:PriceAmount currencyID="EUR">200.00</cbc:PriceAmount></cac:Price>
+ </cac:InvoiceLine>
+ <cac:InvoiceLine>
+  <cbc:ID>2</cbc:ID><cbc:InvoicedQuantity>1</cbc:InvoicedQuantity>
+  <cbc:LineExtensionAmount currencyID="EUR">800.00</cbc:LineExtensionAmount>
+  <cac:Item><cbc:Description>Database</cbc:Description></cac:Item>
+  <cac:Price><cbc:PriceAmount currencyID="EUR">800.00</cbc:PriceAmount></cac:Price>
+ </cac:InvoiceLine>
+</Invoice>

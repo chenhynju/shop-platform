@@ -1,0 +1,7 @@
+# 统一文本文件换行符为 LF，避免 Windows/Linux CI 之间出现换行差异
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.db binary

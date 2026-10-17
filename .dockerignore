@@ -1,0 +1,17 @@
+node_modules
+.next
+dist
+.turbo
+.git
+coverage
+playwright-report
+playwright-pilot-report
+test-results
+packages/db/prisma/dev.db
+.local
+.env
+.env.*
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
