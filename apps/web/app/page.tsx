@@ -316,6 +316,10 @@ export default function Home() {
             <span aria-hidden="true">▦</span>
             {t('Projects')} <span className="nav-count">{user ? projects.length : '—'}</span>
           </a>
+          <Link href="/shop" className="nav-item">
+            <span aria-hidden="true">▧</span>
+            {t('Shop')} <Arrow />
+          </Link>
           {user?.role === 'ADMIN' && (
             <button
               className={members ? 'nav-item selected' : 'nav-item'}

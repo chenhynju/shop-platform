@@ -10,6 +10,10 @@ import { SESSION_COOKIE, tokenHash } from './lib/auth';
 import { authRoutes } from './routes/auth';
 import { userRoutes } from './routes/users';
 import { projectRoutes } from './routes/projects';
+import { shopProductRoutes } from './routes/shop-products';
+import { shopCartRoutes } from './routes/shop-cart';
+import { shopOrderRoutes } from './routes/shop-orders';
+import { shopPromotionRoutes } from './routes/shop-promotions';
 export async function buildApp(
   options: { db?: PrismaClient; env?: NodeJS.ProcessEnv; logger?: boolean } = {}
 ) {
@@ -107,5 +111,10 @@ export async function buildApp(
   authRoutes(app, db, config);
   userRoutes(app, db);
   projectRoutes(app, db);
+  // helloWorldA 电商模块
+  await app.register(shopProductRoutes);
+  await app.register(shopCartRoutes);
+  await app.register(shopOrderRoutes);
+  await app.register(shopPromotionRoutes);
   return app;
 }

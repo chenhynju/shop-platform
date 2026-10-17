@@ -1,10 +1,10 @@
-// Single-instance SQLite baseline; see ADR 0004.
+// helloWorldA 高并发电商：PostgreSQL（并发写与行锁是电商刚需，SQLite 写锁不满足）
 generator client {
   provider = "prisma-client-js"
 }
 datasource db {
-  provider = "sqlite"
-  url = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 model User {
   id Int @id @default(autoincrement())
@@ -35,4 +35,71 @@ model Project {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@index([ownerId, createdAt])
+}
+
+// ───────── helloWorldA 电商模块 ─────────
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  sku         String   @unique
+  name        String
+  description String   @default("")
+  price       Int // 单位：分
+  status      String   @default("ACTIVE") // ACTIVE | OFFLINE
+  createdAt   DateTime @default(now())
+  inventory   Inventory?
+  orderItems  OrderItem[]
+}
+
+model Inventory {
+  id        Int     @id @default(autoincrement())
+  productId Int     @unique
+  sku       String  @unique
+  stock     Int // DB 权威库存
+  version   Int     @default(0) // 乐观锁
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  orderNo   String      @unique
+  userId    Int
+  status    String      @default("PENDING") // PENDING | PAID | CANCELLED | FULFILLED
+  total     Int // 单位：分（优惠后）
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  items     OrderItem[]
+  payment   Payment?
+  @@index([userId, createdAt])
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  sku       String
+  name      String
+  price     Int // 下单时价格快照（分）
+  quantity  Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Promotion {
+  id        Int     @id @default(autoincrement())
+  code      String  @unique
+  type      String // FIXED_DISCOUNT | PERCENT_OFF | FULL_REDUCTION
+  value     Int // FIXED/FULL：分；PERCENT：百分比（1-99）
+  threshold Int? // 满减门槛（分）
+  active    Boolean @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  orderId   Int      @unique
+  amount    Int
+  status    String   @default("CREATED") // CREATED | SUCCESS | FAILED
+  paidAt    DateTime?
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }

@@ -141,6 +141,7 @@ export const chinese = {
   'Request {id}': '请求编号 {id}',
   Language: '语言',
   'User manual': '用户操作手册',
+  Shop: '商城',
   Administrator: '管理员'
 } as const;
 export type MessageKey = keyof typeof chinese;

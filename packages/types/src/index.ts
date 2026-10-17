@@ -25,3 +25,4 @@ export interface Health {
   uptime: number;
   timestamp: string;
 }
+export * from './shop';
