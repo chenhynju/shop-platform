@@ -9,7 +9,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 env:
-  DATABASE_URL: file:./ci.db
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/shop
+  REDIS_URL: redis://localhost:6379
   APP_ORIGIN: http://localhost:3000
   API_INTERNAL_URL: http://127.0.0.1:3001
   NEXT_TELEMETRY_DISABLED: '1'
@@ -17,6 +18,28 @@ jobs:
   quality-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shop
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d shop"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -31,6 +54,8 @@ jobs:
           restore-keys: |
             turbo-${{ runner.os }}-node22-pnpm11-${{ hashFiles('pnpm-lock.yaml') }}-
       - run: pnpm install --frozen-lockfile
+      - name: Apply database migrations
+        run: pnpm db:migrate
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
@@ -49,6 +74,28 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shop
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d shop"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       ADMIN_EMAIL: ci-admin@example.com
       ADMIN_PASSWORD: ci-only-ephemeral-admin-629174
@@ -62,7 +109,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm db:migrate
+      - name: Apply database migrations
+        run: pnpm db:migrate
       - run: pnpm db:seed
       - run: pnpm --filter @repo/web exec playwright install --with-deps chromium
       - run: pnpm e2e

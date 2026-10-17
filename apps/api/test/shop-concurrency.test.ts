@@ -31,7 +31,8 @@ describe('并发防超卖（Redis 原子预扣 + DB 事务）', () => {
     expect(reg.statusCode).toBe(201);
     userId = (reg.json() as { data: { id: number } }).data.id;
     const setCookie = reg.headers['set-cookie'];
-    cookie = (Array.isArray(setCookie) ? setCookie[0] : (setCookie ?? '')).split(';')[0] ?? '';
+    const rawCookie = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    cookie = (rawCookie ?? '').split(';')[0] ?? '';
 
     // 直接建商品与库存（绕过 admin 权限），同步 Redis 可售库存
     const product = await prisma.product.create({
