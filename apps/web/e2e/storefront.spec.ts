@@ -65,7 +65,7 @@ test('storefront UI: catalog, search, sorting, availability and mobile layout', 
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/storefront-mobile.png', fullPage: true });
-  await page.getByRole('link', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Sign in to continue' })).toBeVisible();
 });
 

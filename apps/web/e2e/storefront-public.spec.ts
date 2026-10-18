@@ -39,7 +39,7 @@ test('released storefront: real catalog, search, guest protection and account na
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/storefront-deployed-mobile.png', fullPage: true });
-  await page.getByRole('link', { name: 'Account' }).click();
+  await page.getByRole('link', { name: 'Account', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Sign in to continue' })).toBeVisible();
   await page.getByRole('button', { name: 'New here? Create account', exact: true }).click();
   await expect(page.getByLabel('Your name')).toBeVisible();
