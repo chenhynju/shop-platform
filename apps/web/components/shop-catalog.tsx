@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ProductMedia } from '@/components/product-media';
@@ -11,7 +12,7 @@ import { categories, categoryOf, productHref } from '@/lib/catalog';
 import { useShopAuth } from '@/lib/use-shop-auth';
 import type { ApiResponse, ShopProduct } from '@repo/types';
 
-export default function ShopCatalog() {
+export default function ShopCatalog({ hero, bottom }: { hero: ReactNode; bottom: ReactNode }) {
   const { locale } = useLocale();
   const { state: auth } = useShopAuth();
   const params = useSearchParams();
@@ -86,54 +87,7 @@ export default function ShopCatalog() {
     <div className="market-home">
       {!filtered && (
         <>
-          <section className="market-hero-grid" aria-label="Discover the collection">
-            <div className="market-hero">
-              <div className="market-hero-copy">
-                <span className="market-kicker">THE EVERYDAY EDIT</span>
-                <h1>
-                  Your everyday,
-                  <br />
-                  upgraded.
-                </h1>
-                <p>
-                  A better desk. A slower coffee.
-                  <br />
-                  Find the little things that make a difference.
-                </p>
-                <Link className="market-button" href="/shop?category=tech">
-                  Explore tech & accessories <span aria-hidden="true">→</span>
-                </Link>
-              </div>
-              <ProductMedia name="Desk collection" scene priority />
-              <span className="market-image-label">AI-generated sample imagery</span>
-            </div>
-            <div className="market-mini-promos">
-              <Link href="/shop?category=home" className="market-mini home">
-                <div>
-                  <span className="market-kicker">HOME & LIVING</span>
-                  <h2>
-                    A little more
-                    <br />
-                    feel-good.
-                  </h2>
-                  <span>Explore the collection →</span>
-                </div>
-                <ProductMedia name="Ceramic mug" priority />
-              </Link>
-              <Link href="/shop?category=desk" className="market-mini desk">
-                <div>
-                  <span className="market-kicker">DESK ESSENTIALS</span>
-                  <h2>
-                    Make space
-                    <br />
-                    for focus.
-                  </h2>
-                  <span>Find your desk essentials →</span>
-                </div>
-                <ProductMedia name="Desk mat" priority />
-              </Link>
-            </div>
-          </section>
+          {hero}
           <section className="market-category-tiles" aria-label="Shop by category">
             {categories.map((c) => (
               <Link key={c.id} href={c.id === 'all' ? '/shop' : '/shop?category=' + c.id}>
@@ -310,20 +264,7 @@ export default function ShopCatalog() {
           )}
         </section>
       </div>
-      <section className="market-bottom-banner">
-        <div>
-          <span className="market-kicker">YOUR NEXT FIND IS WAITING</span>
-          <h2>A place for your everyday favorites.</h2>
-          <p>Create an account to keep your cart and orders together.</p>
-        </div>
-        <Link href="/account" className="market-button">
-          Your Purelamp account →
-        </Link>
-      </section>
-      <p className="catalog-note">
-        Preview catalog · Prices in CNY (¥) · AI-generated sample images · Simulated payments.
-        Delivery, returns and USD/CAD checkout are not yet available.
-      </p>
+      {bottom}
     </div>
   );
 }
