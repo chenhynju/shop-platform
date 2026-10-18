@@ -21,13 +21,15 @@ test('released storefront: real catalog, search, guest protection and account na
   expect(response.status()).toBe(200);
   const products = (await response.json()).data as { sku: string; name: string; price: number }[];
   await expect(page).toHaveTitle('Purelamp | Everyday finds');
-  await expect(page.getByRole('heading', { name: 'Good finds. Better everyday.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your everyday, upgraded.' })).toBeVisible();
   await expect(page.locator('article.product-card')).toHaveCount(products.length);
   if (products.length) {
     const product = products[0]!;
     await page.getByRole('searchbox', { name: 'Search products' }).fill(product.sku);
+    await page.getByRole('searchbox', { name: 'Search products' }).press('Enter');
     await expect(page.locator('article.product-card h3').first()).toHaveText(product.name);
     await page.getByRole('searchbox', { name: 'Search products' }).fill('');
+    await page.getByRole('searchbox', { name: 'Search products' }).press('Enter');
     await expect(page.locator('article.product-card')).toHaveCount(products.length);
   }
   expect(await page.evaluate(async () => (await fetch('/api/shop/cart')).status)).toBe(401);
@@ -37,7 +39,7 @@ test('released storefront: real catalog, search, guest protection and account na
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/storefront-deployed-mobile.png', fullPage: true });
-  await page.getByRole('link', { name: 'Account ↗' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   await expect(page.getByRole('heading', { name: 'Sign in to continue' })).toBeVisible();
   await page.getByRole('button', { name: 'New here? Create account', exact: true }).click();
   await expect(page.getByLabel('Your name')).toBeVisible();

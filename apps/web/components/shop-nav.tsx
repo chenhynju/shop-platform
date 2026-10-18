@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 import type { ApiResponse, CartItem } from '@repo/types';
 import { api } from '@/lib/api';
 import { CART_CHANGED_EVENT } from '@/lib/shop';
+import { ShopSearch } from './shop-search';
+import { categories } from '@/lib/catalog';
 
 const links = [
   { href: '/shop', label: 'Products' },
@@ -27,43 +29,57 @@ export function ShopNav() {
     window.addEventListener(CART_CHANGED_EVENT, loadCartCount);
     return () => window.removeEventListener(CART_CHANGED_EVENT, loadCartCount);
   }, [loadCartCount]);
-
-  function isActive(href: string) {
-    return href === '/shop' ? pathname === href || pathname === '/' : pathname.startsWith(href);
-  }
-
+  const isActive = (href: string) =>
+    href === '/shop'
+      ? pathname === '/shop' || pathname === '/' || pathname.startsWith('/shop/product/')
+      : pathname.startsWith(href);
   return (
-    <header className="shop-header">
-      <div className="shop-header-inner">
-        <Link href="/" className="shop-brand">
-          <span className="brand-mark small" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </span>
-          PURELAMP <span className="shop-brand-light">everyday finds</span>
-        </Link>
-        <nav className="shop-nav" aria-label="Shop navigation">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={isActive(link.href) ? 'active' : ''}
-              aria-current={isActive(link.href) ? 'page' : undefined}
-            >
-              {link.label}
-              {link.href === '/shop/cart' && cartCount !== null && cartCount > 0 && (
-                <span className="shop-nav-badge">{cartCount}</span>
-              )}
-            </Link>
-          ))}
-        </nav>
-        <div className="shop-header-right">
-          <Link href="/account" className="shop-back-link">
-            Account ↗
+    <>
+      <div className="market-topline">
+        <span>PURELAMP MARKETPLACE</span>
+        <span>Preview catalog · CNY prices · Simulated checkout</span>
+      </div>
+      <header className="shop-header">
+        <div className="shop-header-inner">
+          <Link href="/" className="shop-brand" aria-label="Purelamp home">
+            <span className="market-logo">p</span>purelamp
+            <span className="market-brand-dot">.</span>
+          </Link>
+          <ShopSearch />
+          <nav className="shop-nav" aria-label="Shop navigation">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={isActive(link.href) ? 'active' : ''}
+                aria-current={isActive(link.href) ? 'page' : undefined}
+              >
+                {link.label}
+                {link.href === '/shop/cart' && cartCount !== null && cartCount > 0 && (
+                  <span className="shop-nav-badge">{cartCount}</span>
+                )}
+              </Link>
+            ))}
+          </nav>
+          <Link href="/account" className="shop-back-link" aria-label="Account">
+            Account <span aria-hidden="true">↗</span>
           </Link>
         </div>
-      </div>
-    </header>
+        <div className="market-category-nav">
+          <div>
+            <Link href="/shop" className="market-all">
+              ☰ All categories
+            </Link>
+            {categories.slice(1).map((c) => (
+              <Link key={c.id} href={'/shop?category=' + c.id}>
+                {c.label}
+              </Link>
+            ))}
+            <Link href="/shop?stock=available">In-stock finds</Link>
+            <Link href="/shop/guide">Shopping guide</Link>
+          </div>
+        </div>
+      </header>
+    </>
   );
 }

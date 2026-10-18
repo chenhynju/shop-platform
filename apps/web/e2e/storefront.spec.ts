@@ -43,7 +43,7 @@ test('storefront UI: catalog, search, sorting, availability and mobile layout', 
   });
   await page.goto('/');
   await expect(page).toHaveTitle('Purelamp | Everyday finds');
-  await expect(page.getByRole('heading', { name: 'Good finds. Better everyday.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your everyday, upgraded.' })).toBeVisible();
   await expect(page.locator('article.product-card')).toHaveCount(3);
   await expect(page.getByText('Start strong. Build what matters.')).toHaveCount(0);
   await page.getByLabel('Sort products').selectOption('price-low');
@@ -51,10 +51,12 @@ test('storefront UI: catalog, search, sorting, availability and mobile layout', 
   await page.getByLabel('In stock only').check();
   await expect(page.locator('article.product-card')).toHaveCount(2);
   await page.getByRole('searchbox', { name: 'Search products' }).fill('headphones');
+  await page.getByRole('searchbox', { name: 'Search products' }).press('Enter');
   await expect(page.locator('article.product-card')).toHaveCount(1);
   await page.getByRole('button', { name: '+ Add to cart', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Please sign in');
   await page.getByRole('searchbox', { name: 'Search products' }).fill('missing-item');
+  await page.getByRole('searchbox', { name: 'Search products' }).press('Enter');
   await expect(page.getByText('No matching products')).toBeVisible();
   await page.getByRole('button', { name: 'Clear filters' }).click();
   await expect(page.locator('article.product-card')).toHaveCount(3);
@@ -63,7 +65,7 @@ test('storefront UI: catalog, search, sorting, availability and mobile layout', 
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/storefront-mobile.png', fullPage: true });
-  await page.getByRole('link', { name: 'Account ↗' }).click();
+  await page.getByRole('link', { name: 'Account' }).click();
   await expect(page.getByRole('heading', { name: 'Sign in to continue' })).toBeVisible();
 });
 
@@ -149,4 +151,56 @@ test('account UI: register, add to cart, sign out and login error', async ({ pag
   await page.getByLabel('Password', { exact: true }).fill('wrong-password-2026');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.locator('main [role=alert]')).toBeVisible();
+});
+
+test('marketplace: category URL survives reload, details enforce stock and missing SKU recovers', async ({
+  page
+}) => {
+  let added = 0;
+  await page.route('**/api/**', async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/shop/products') return route.fulfill({ json: { data: products } });
+    if (path === '/api/auth/me')
+      return route.fulfill({
+        json: { data: { id: 123, name: 'UI shopper', email: 'ui@example.test', role: 'USER' } }
+      });
+    if (path === '/api/shop/cart') {
+      if (route.request().method() === 'POST') {
+        expect(route.request().postDataJSON()).toEqual({ sku: 'UI-KEYBOARD', quantity: 4 });
+        added++;
+      }
+      return route.fulfill({ json: { data: [] } });
+    }
+    return route.fulfill({ status: 404, json: { error: { code: 'NOT_FOUND' } } });
+  });
+  await page.goto('/shop?category=tech&sort=price-low');
+  await expect(page.locator('article.product-card')).toHaveCount(3);
+  await page.reload();
+  await expect(page.locator('article.product-card h3').first()).toHaveText('Wireless mouse');
+  await page.getByRole('link', { name: 'Mechanical keyboard', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Mechanical keyboard', exact: true })
+  ).toBeVisible();
+  await expect(page.getByText('UI-KEYBOARD', { exact: true }).first()).toBeVisible();
+  await page.getByLabel('Quantity', { exact: true }).fill('99');
+  await expect(page.getByLabel('Quantity', { exact: true })).toHaveValue('4');
+  await page.getByRole('button', { name: '+ Add to cart', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('added to your cart');
+  expect(added).toBe(1);
+  await expect(page.locator('.product-atlas').first()).toBeVisible();
+  await expect
+    .poll(() =>
+      page
+        .locator('.product-atlas')
+        .first()
+        .evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)
+    )
+    .toBe(true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/marketplace-detail-mobile.png', fullPage: true });
+  await page.goto('/shop/product/missing-sku');
+  await expect(page.getByRole('heading', { name: 'Product not found' })).toBeVisible();
+  await page.getByRole('link', { name: 'Browse all products' }).click();
+  await expect(page.locator('article.product-card')).toHaveCount(3);
 });
