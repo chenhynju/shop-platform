@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createTranslator, resolveLocale, formatDate, formatNumber } from '../dist/index.js';
 test('English default ignores browser locale and unsupported cookie values', () => {
-  for (const value of [undefined, null, 'zh', 'zh-TW', 'fr', '<script>'])
+  for (const value of [undefined, null, 'zh', 'zh-TW', 'fr-unknown', '<script>'])
     assert.equal(resolveLocale(value), 'en');
-  assert.equal(resolveLocale('zh-CN'), 'zh-CN');
+  for (const locale of ['zh-CN', 'fr', 'es']) assert.equal(resolveLocale(locale), locale);
 });
 test('typed catalogs, explicit locale, English fallback and named values', () => {
   const en = { title: 'Invoice {number}', empty: 'English fallback', zero: '{amount}' };

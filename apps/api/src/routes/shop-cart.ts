@@ -1,11 +1,14 @@
 // 购物车路由（Redis hash）
 import type { FastifyPluginAsync } from 'fastify';
-import { prisma } from '@repo/db';
+import type { PrismaClient } from '@repo/db';
 import { cartAdd, cartClear, cartGet, cartSet } from '../lib/redis';
 import { requireUser } from '../lib/auth';
 import type { ApiResponse, CartItem } from '@repo/types';
 
-export const shopCartRoutes: FastifyPluginAsync = async (app) => {
+export const shopCartRoutes: FastifyPluginAsync<{ db: PrismaClient }> = async (
+  app,
+  { db: prisma }
+) => {
   app.addHook('onRequest', async (req) => {
     requireUser(req);
   });

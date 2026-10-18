@@ -1,4 +1,5 @@
 'use client';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -7,7 +8,7 @@ import { ShopLogin } from '@/components/shop-login';
 import { ProductMedia } from '@/components/product-media';
 import { productHref } from '@/lib/catalog';
 import { api, RequestError } from '@/lib/api';
-import { localizeError } from '@/lib/localize-error';
+import { localizeShopError } from '@/lib/shop-error';
 import { CART_CHANGED_EVENT, describePromotion, estimatePromoTotal, formatCents } from '@/lib/shop';
 import { useShopAuth } from '@/lib/use-shop-auth';
 import type {
@@ -20,8 +21,8 @@ import type {
 } from '@repo/types';
 
 export default function CartPage() {
+  const { st: t, sample, locale } = useLocale();
   const router = useRouter();
-  const { locale } = useLocale();
   const { state: auth, refresh } = useShopAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<ShopProduct[]>([]);
@@ -95,7 +96,7 @@ export default function CartPage() {
       setPlacing(false);
       setError(err);
       if (err instanceof RequestError && err.code === 'NO_STOCK') {
-        setNotice('Some items ran out of stock. Review your cart below.');
+        setNotice(t('Some items ran out of stock. Review your cart below.'));
         await loadCart();
       }
     }
@@ -116,7 +117,7 @@ export default function CartPage() {
   const discount = subtotal - estimatedTotal;
 
   if (auth.status === 'checking') {
-    return <div className="loading-panel">Checking your account…</div>;
+    return <div className="loading-panel">{t('Checking your account…')}</div>;
   }
   if (auth.status === 'guest') {
     return <ShopLogin onSuccess={() => refresh()} />;
@@ -126,22 +127,22 @@ export default function CartPage() {
     <>
       <div className="page-heading">
         <div>
-          <p className="market-kicker">YOUR SHOPPING BAG</p>
-          <h1>Your cart</h1>
+          <p className="market-kicker">{t('YOUR SHOPPING BAG')}</p>
+          <h1>{t('Your cart')}</h1>
           <p className="subtitle">
-            Quantities update instantly. Stock is reserved when you place the order.
+            {t('Quantities update instantly. Stock is reserved when you place the order.')}{' '}
           </p>
         </div>
         <Link className="market-back" href="/shop">
-          Continue shopping →
+          {t('Continue shopping →')}{' '}
         </Link>
       </div>
       {Boolean(error) && (
         <div role="alert" className="message error">
-          <strong>We couldn’t finish that request.</strong>
-          <span>{localizeError(error, locale)}</span>
+          <strong>{t('We couldn’t finish that request.')}</strong>
+          <span>{localizeShopError(error, t)}</span>
           <button className="text-button" onClick={() => setError(null)}>
-            Dismiss
+            {t('Dismiss')}{' '}
           </button>
         </div>
       )}
@@ -149,28 +150,28 @@ export default function CartPage() {
         {notice || null}
       </div>
       {loading && cart.length === 0 ? (
-        <div className="loading-panel">Loading your cart…</div>
+        <div className="loading-panel">{t('Loading your cart…')}</div>
       ) : cart.length === 0 ? (
         <div className="shop-empty">
-          <strong>Your cart is empty</strong>
-          <p>Browse the catalog and add something you like.</p>
+          <strong>{t('Your cart is empty')}</strong>
+          <p>{t('Browse the catalog and add something you like.')}</p>
           <Link href="/shop" className="button primary">
-            ← Back to products
+            {t('← Back to products')}{' '}
           </Link>
         </div>
       ) : (
         <div className="cart-layout">
-          <section className="shop-panel" aria-label="Cart items">
+          <section className="shop-panel" aria-label={t('Cart items')}>
             <div className="cart-table-wrap">
               <table className="cart-table">
                 <thead>
                   <tr>
-                    <th>Product</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th className="align-right">Subtotal</th>
+                    <th>{t('Product')}</th>
+                    <th>{t('Price')}</th>
+                    <th>{t('Quantity')}</th>
+                    <th className="align-right">{t('Subtotal')}</th>
                     <th>
-                      <span className="sr-only">Remove</span>
+                      <span className="sr-only">{t('Remove')}</span>
                     </th>
                   </tr>
                 </thead>
@@ -183,21 +184,30 @@ export default function CartPage() {
                           <Link
                             className="market-cart-image"
                             href={productHref(row.item.sku)}
-                            aria-label={`View ${row.product.name}`}
+                            aria-label={t('View {name}', {
+                              name: sample(row.item.sku, 'name', row.product.name)
+                            })}
                           >
-                            <ProductMedia name={row.product.name} />
+                            <ProductMedia
+                              label={sample(row.item.sku, 'name', row.product.name)}
+                              name={row.product.name}
+                            />
                           </Link>
                           <strong>
-                            <Link href={productHref(row.item.sku)}>{row.product.name}</Link>
+                            <Link href={productHref(row.item.sku)}>
+                              {sample(row.item.sku, 'name', row.product.name)}
+                            </Link>
                           </strong>
                           <span className="product-sku">{row.item.sku}</span>
                         </td>
-                        <td>{formatCents(row.product.price)}</td>
+                        <td>{formatCents(row.product.price, locale)}</td>
                         <td>
                           <div className="stepper">
                             <button
                               type="button"
-                              aria-label={`Decrease ${row.product.name}`}
+                              aria-label={t('Decrease {name}', {
+                                name: sample(row.item.sku, 'name', row.product.name)
+                              })}
                               disabled={busy || row.item.quantity <= 1}
                               onClick={() => changeQuantity(row.item.sku, row.item.quantity - 1)}
                             >
@@ -206,7 +216,9 @@ export default function CartPage() {
                             <span aria-live="polite">{row.item.quantity}</span>
                             <button
                               type="button"
-                              aria-label={`Increase ${row.product.name}`}
+                              aria-label={t('Increase {name}', {
+                                name: sample(row.item.sku, 'name', row.product.name)
+                              })}
                               disabled={busy}
                               onClick={() => changeQuantity(row.item.sku, row.item.quantity + 1)}
                             >
@@ -215,7 +227,7 @@ export default function CartPage() {
                           </div>
                         </td>
                         <td className="align-right">
-                          {formatCents(row.product.price * row.item.quantity)}
+                          {formatCents(row.product.price * row.item.quantity, locale)}
                         </td>
                         <td className="align-right">
                           <button
@@ -223,7 +235,7 @@ export default function CartPage() {
                             disabled={busy}
                             onClick={() => changeQuantity(row.item.sku, 0)}
                           >
-                            Remove
+                            {t('Remove')}{' '}
                           </button>
                         </td>
                       </tr>
@@ -233,47 +245,52 @@ export default function CartPage() {
               </table>
             </div>
           </section>
-          <aside className="shop-panel cart-summary" aria-label="Order summary">
-            <h2>Order summary</h2>
+          <aside className="shop-panel cart-summary" aria-label={t('Order summary')}>
+            <h2>{t('Order summary')}</h2>
             <div className="summary-row">
-              <span>Subtotal</span>
-              <span>{formatCents(subtotal)}</span>
+              <span>{t('Subtotal')}</span>
+              <span>{formatCents(subtotal, locale)}</span>
             </div>
             {appliedPromo && (
               <div className="summary-row">
-                <span>Promo {appliedPromo.code} (estimate)</span>
-                <span>−{formatCents(discount)}</span>
+                <span>
+                  {t('Promo')} {appliedPromo.code}
+                  {t('(estimate)')}
+                </span>
+                <span>−{formatCents(discount, locale)}</span>
               </div>
             )}
             <div className="summary-row total">
-              <span>{appliedPromo ? 'Estimated total' : 'Total'}</span>
-              <span>{formatCents(estimatedTotal)}</span>
+              <span>{appliedPromo ? t('Estimated total') : t('Total')}</span>
+              <span>{formatCents(estimatedTotal, locale)}</span>
             </div>
             <label>
-              Promo code
+              {t('Promo code')}{' '}
               <input
                 name="promoCode"
                 value={promoInput}
                 onChange={(event) => setPromoInput(event.target.value)}
-                placeholder="e.g. SAVE10"
+                placeholder={t('e.g. SAVE10')}
                 autoComplete="off"
               />
             </label>
             {promoCode !== '' && appliedPromo === null && (
               <p className="promo-state bad">
-                Unknown code — the server will ignore it. Check the list below.
+                {t('Unknown code — the server will ignore it. Check the list below.')}{' '}
               </p>
             )}
             {appliedPromo && (
               <p className="promo-state ok">
-                {appliedPromo.code} applied · saves {formatCents(discount)} at most.
+                {appliedPromo.code}
+                {t('applied · saves')} {formatCents(discount, locale)}
+                {t('at most.')}{' '}
               </p>
             )}
             {promotions.length > 0 && (
               <p className="promo-hints">
-                Available:{' '}
+                {t('Available:')}{' '}
                 {promotions
-                  .map((promo) => `${promo.code} — ${describePromotion(promo)}`)
+                  .map((promo) => `${promo.code} — ${describePromotion(promo, locale, t)}`)
                   .join(' · ')}
               </p>
             )}
@@ -282,11 +299,12 @@ export default function CartPage() {
               disabled={placing || cart.length === 0}
               onClick={() => void placeOrder()}
             >
-              {placing ? 'Placing order…' : 'Place order'} <span aria-hidden="true">↗</span>
+              {placing ? t('Placing order…') : t('Place order')} <span aria-hidden="true">↗</span>
             </button>
             <p className="summary-note">
-              The final discount is applied by the server when the order is created. Unpaid orders
-              can be cancelled from your orders page.
+              {t(
+                'The final discount is applied by the server when the order is created. Unpaid orders can be cancelled from your orders page.'
+              )}{' '}
             </p>
           </aside>
         </div>

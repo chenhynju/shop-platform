@@ -1,7 +1,7 @@
 // 商品与库存管理路由
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
-import { prisma } from '@repo/db';
+import type { PrismaClient } from '@repo/db';
 import { initStock, getRedisStock, stockKey, redis } from '../lib/redis';
 import { requireAdmin } from '../lib/auth';
 import type { ApiResponse, ShopProduct } from '@repo/types';
@@ -14,7 +14,10 @@ const createProductSchema = z.object({
   stock: z.number().int().min(0)
 });
 
-export const shopProductRoutes: FastifyPluginAsync = async (app) => {
+export const shopProductRoutes: FastifyPluginAsync<{ db: PrismaClient }> = async (
+  app,
+  { db: prisma }
+) => {
   // 商品列表（公开）
   app.get('/api/shop/products', async (): Promise<ApiResponse<ShopProduct[]>> => {
     const products = await prisma.product.findMany({

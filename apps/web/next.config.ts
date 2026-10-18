@@ -12,6 +12,24 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   transpilePackages: ['@repo/ui'],
   experimental: { cpus: 1 },
+  webpack(config, { isServer }) {
+    const splitting = config.optimization?.splitChunks;
+    if (!isServer && splitting && typeof splitting === 'object') {
+      // This context is imported by every client entry. Next's default minimum
+      // chunk size otherwise duplicates its small message/runtime modules.
+      splitting.cacheGroups = {
+        ...splitting.cacheGroups,
+        commerceLocale: {
+          test: /[\\/]apps[\\/]web[\\/](components[\\/]locale-provider|lib[\\/](messages|shop-i18n|shop-error))\.[jt]sx?$/,
+          name: 'commerce-locale',
+          chunks: 'all',
+          enforce: true,
+          priority: 40
+        }
+      };
+    }
+    return config;
+  },
   async rewrites() {
     return [{ source: '/api/:path*', destination: API_INTERNAL_URL + '/api/:path*' }];
   },
