@@ -1,9 +1,9 @@
 import ShopLayout from './shop/layout';
-import ShopPage from './shop/page';
+import ShopCatalog from '@/components/shop-catalog';
 export default function HomePage() {
   return (
     <ShopLayout>
-      <ShopPage />
+      <ShopCatalog />
     </ShopLayout>
   );
 }

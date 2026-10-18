@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
 
+test.use({
+  extraHTTPHeaders:
+    process.env.E2E_STOREFRONT_PREVIEW === '1' ? { 'X-Shop-Preview': 'storefront-r20261018' } : {}
+});
+
 const products = [
   {
     id: 1,
@@ -203,4 +208,21 @@ test('marketplace: category URL survives reload, details enforce stock and missi
   await expect(page.getByRole('heading', { name: 'Product not found' })).toBeVisible();
   await page.getByRole('link', { name: 'Browse all products' }).click();
   await expect(page.locator('article.product-card')).toHaveCount(3);
+});
+
+test('marketplace: missing catalog image has an accessible fallback', async ({ page }) => {
+  await page.route('**/images/catalog-atlas-v2.webp', (route) => route.abort());
+  await page.route('**/api/**', (route) => {
+    if (new URL(route.request().url()).pathname === '/api/shop/products')
+      return route.fulfill({ json: { data: products } });
+    return route.fulfill({ status: 401, json: { error: { code: 'UNAUTHORIZED' } } });
+  });
+  await page.goto('/shop/product/UI-KEYBOARD');
+  await expect(
+    page.getByRole('heading', { name: 'Mechanical keyboard', exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('img', { name: 'Mechanical keyboard — image unavailable' })
+  ).toBeVisible();
+  await expect(page.getByText('Product image unavailable', { exact: true })).toBeVisible();
 });
