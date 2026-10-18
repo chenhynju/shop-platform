@@ -1,7 +1,7 @@
 // 促销规则管理路由（admin 创建/停用促销码）
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
-import { prisma } from '@repo/db';
+import type { PrismaClient } from '@repo/db';
 import { requireAdmin } from '../lib/auth';
 import type { ApiResponse, PromotionInfo } from '@repo/types';
 
@@ -12,7 +12,10 @@ const createPromotionSchema = z.object({
   threshold: z.number().int().min(1).optional()
 });
 
-export const shopPromotionRoutes: FastifyPluginAsync = async (app) => {
+export const shopPromotionRoutes: FastifyPluginAsync<{ db: PrismaClient }> = async (
+  app,
+  { db: prisma }
+) => {
   app.get('/api/shop/promotions', async (): Promise<ApiResponse<PromotionInfo[]>> => {
     const promotions = await prisma.promotion.findMany({
       where: { active: true },
