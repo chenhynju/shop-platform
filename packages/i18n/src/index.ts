@@ -1,11 +1,13 @@
 /** Framework-neutral locale primitives. Product copy belongs to each consuming app. */
-export const locales = ['en', 'zh-CN'] as const;
+export const locales = ['en', 'zh-CN', 'fr', 'es'] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = 'en';
 export const localeCookie = 'toolkit_locale';
 
 export function resolveLocale(value: unknown): Locale {
-  return value === 'zh-CN' ? 'zh-CN' : defaultLocale;
+  return typeof value === 'string' && locales.includes(value as Locale)
+    ? (value as Locale)
+    : defaultLocale;
 }
 
 export function createTranslator<const T extends Record<string, string>>(

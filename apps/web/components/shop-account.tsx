@@ -1,4 +1,6 @@
 'use client';
+import { useLocale } from '@/components/locale-provider';
+
 import Link from 'next/link';
 import { useState } from 'react';
 import { ShopLogin } from '@/components/shop-login';
@@ -7,6 +9,7 @@ import { api } from '@/lib/api';
 import { CART_CHANGED_EVENT } from '@/lib/shop';
 
 export default function ShopAccount() {
+  const { st: t } = useLocale();
   const { state, refresh } = useShopAuth();
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -26,7 +29,7 @@ export default function ShopAccount() {
   return (
     <>
       {state.status === 'checking' ? (
-        <p role="status">Loading your account…</p>
+        <p role="status">{t('Loading your account…')}</p>
       ) : state.status === 'guest' ? (
         <ShopLogin
           onSuccess={() => {
@@ -35,25 +38,27 @@ export default function ShopAccount() {
         />
       ) : (
         <section className="shop-login-card">
-          <p className="eyebrow">YOUR ACCOUNT</p>
-          <h1>Welcome, {state.user.name || 'shopper'}</h1>
+          <p className="eyebrow">{t('YOUR ACCOUNT')}</p>
+          <h1>
+            {t('Welcome,')} {state.user.name || 'shopper'}
+          </h1>
           <p>{state.user.email}</p>
           <p>
             <Link className="button primary" href="/shop/orders">
-              View your orders
+              {t('View your orders')}{' '}
             </Link>
           </p>
           <p>
-            <Link href="/shop/cart">Continue to your cart →</Link>
+            <Link href="/shop/cart">{t('Continue to your cart →')}</Link>
           </p>
           {state.user.role === 'ADMIN' && (
             <p>
-              <Link href="/workspace">Administration workspace →</Link>
+              <Link href="/workspace">{t('Administration workspace →')}</Link>
             </p>
           )}
-          {error && <p role="alert">Could not sign out. Please try again.</p>}
+          {error && <p role="alert">{t('Could not sign out. Please try again.')}</p>}
           <button className="button secondary" disabled={busy} onClick={() => void logout()}>
-            {busy ? 'Signing out…' : 'Sign out'}
+            {busy ? t('Signing out…') : t('Sign out')}
           </button>
         </section>
       )}

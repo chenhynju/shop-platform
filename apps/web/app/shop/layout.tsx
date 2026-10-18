@@ -1,8 +1,10 @@
+import { shopLocale } from '@/lib/shop-i18n-server';
 import type { ReactNode } from 'react';
 import { ShopNav } from '@/components/shop-nav';
 import './marketplace.css';
 
-export default function ShopLayout({ children }: { children: ReactNode }) {
+export default async function ShopLayout({ children }: { children: ReactNode }) {
+  const { t } = await shopLocale();
   return (
     <div className="shop-shell">
       <ShopNav />
@@ -13,34 +15,33 @@ export default function ShopLayout({ children }: { children: ReactNode }) {
             <strong>
               purelamp<span>.</span>
             </strong>
-            <p>Everyday finds. A world of possibilities.</p>
-            <small>Preview marketplace · Simulated payments</small>
+            <p>{t('Everyday finds. A world of possibilities.')}</p>
+            <small>{t('Preview marketplace · Simulated payments')}</small>
           </div>
           <div>
-            <h2>Explore</h2>
-            <a href="/shop">All products</a>
-            <a href="/shop?category=tech">Tech & accessories</a>
-            <a href="/shop?category=home">Home & living</a>
+            <h2>{t('Explore')}</h2>
+            <a href="/shop">{t('All products')}</a>
+            <a href="/shop?category=tech">{t('Tech & accessories')}</a>
+            <a href="/shop?category=home">{t('Home & living')}</a>
           </div>
           <div>
-            <h2>Your shopping</h2>
-            <a href="/account">Your account</a>
-            <a href="/shop/cart">Shopping cart</a>
-            <a href="/shop/orders">Your orders</a>
+            <h2>{t('Your shopping')}</h2>
+            <a href="/account">{t('Your account')}</a>
+            <a href="/shop/cart">{t('Shopping cart')}</a>
+            <a href="/shop/orders">{t('Your orders')}</a>
           </div>
           <div>
-            <h2>Good to know</h2>
-            <a href="/shop/guide">Shopping guide</a>
+            <h2>{t('Good to know')}</h2>
+            <a href="/shop/guide">{t('Shopping guide')}</a>
             <p>
-              Sample prices in CNY.
-              <br />
-              Real delivery is not yet available.
+              {t('Sample prices in CNY.')} <br />
+              {t('Real delivery is not yet available.')}{' '}
             </p>
           </div>
         </div>
         <div className="market-footer-bottom">
           © {new Date().getFullYear()} Purelamp{' '}
-          <span>AI-generated sample imagery · Preview release</span>
+          <span>{t('AI-generated sample imagery · Preview release')}</span>
         </div>
       </footer>
     </div>
