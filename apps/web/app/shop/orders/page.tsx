@@ -6,7 +6,7 @@ import { formatDate } from '@toolkit/i18n';
 import { useLocale } from '@/components/locale-provider';
 import { ShopLogin } from '@/components/shop-login';
 import { api } from '@/lib/api';
-import { localizeError } from '@/lib/localize-error';
+import { localizeShopError } from '@/lib/shop-error';
 import { formatCents } from '@/lib/shop';
 import { useShopAuth } from '@/lib/use-shop-auth';
 import type { ApiResponse, OrderView } from '@repo/types';
@@ -103,7 +103,7 @@ export default function OrdersPage() {
       {Boolean(error) && (
         <div role="alert" className="message error">
           <strong>{t('We couldn’t finish that request.')}</strong>
-          <span>{localizeError(error, locale, t)}</span>
+          <span>{localizeShopError(error, t)}</span>
           <button className="text-button" onClick={() => setError(null)}>
             {t('Dismiss')}{' '}
           </button>

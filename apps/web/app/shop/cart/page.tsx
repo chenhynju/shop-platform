@@ -8,7 +8,7 @@ import { ShopLogin } from '@/components/shop-login';
 import { ProductMedia } from '@/components/product-media';
 import { productHref } from '@/lib/catalog';
 import { api, RequestError } from '@/lib/api';
-import { localizeError } from '@/lib/localize-error';
+import { localizeShopError } from '@/lib/shop-error';
 import { CART_CHANGED_EVENT, describePromotion, estimatePromoTotal, formatCents } from '@/lib/shop';
 import { useShopAuth } from '@/lib/use-shop-auth';
 import type {
@@ -140,7 +140,7 @@ export default function CartPage() {
       {Boolean(error) && (
         <div role="alert" className="message error">
           <strong>{t('We couldn’t finish that request.')}</strong>
-          <span>{localizeError(error, locale, t)}</span>
+          <span>{localizeShopError(error, t)}</span>
           <button className="text-button" onClick={() => setError(null)}>
             {t('Dismiss')}{' '}
           </button>

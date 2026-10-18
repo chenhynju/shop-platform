@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ProductMedia } from '@/components/product-media';
 import { useLocale } from '@/components/locale-provider';
 import { api } from '@/lib/api';
-import { localizeError } from '@/lib/localize-error';
+import { localizeShopError } from '@/lib/shop-error';
 import { CART_CHANGED_EVENT, formatCents } from '@/lib/shop';
 import { categories, categoryOf, productHref } from '@/lib/catalog';
 import { useShopAuth } from '@/lib/use-shop-auth';
@@ -188,7 +188,7 @@ export default function ShopCatalog({ hero, bottom }: { hero: ReactNode; bottom:
           {Boolean(error) && (
             <div role="alert" className="message error">
               <strong>{t('We couldn’t finish that request.')}</strong>
-              <span>{localizeError(error, locale, t)}</span>
+              <span>{localizeShopError(error, t)}</span>
               <button className="text-button" onClick={() => void loadProducts()}>
                 {t('Retry loading products')}{' '}
               </button>

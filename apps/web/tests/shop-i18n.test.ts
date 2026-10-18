@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { locales, resolveLocale } from '@toolkit/i18n';
 import { translateShop, type ShopMessages } from '../lib/shop-i18n';
 import { formatCents } from '../lib/shop';
-import { localizeError } from '../lib/localize-error';
+import { localizeShopError } from '../lib/shop-error';
 import { RequestError } from '../lib/api';
 import en from '../content/shop.en.json';
 import zh from '../content/shop.zh-CN.json';
@@ -44,12 +44,30 @@ describe('four-language commerce messages', () => {
       '<img src=x onerror=alert(1)>'
     );
     expect(
-      localizeError(
+      localizeShopError(
         new RequestError('Internal English details', 'INVALID_CREDENTIALS', 'request-1'),
-        'es',
         t
       )
     ).toBe('El correo electrónico o la contraseña son incorrectos. · Solicitud request-1');
+  });
+  it('fails safely for unknown backend codes and local transport errors', () => {
+    const t = (key: string, values?: Record<string, string | number>) =>
+      translateShop('fr', fr, key, values);
+    for (const code of [
+      'UNAUTHORIZED',
+      'FORBIDDEN',
+      'NO_STOCK',
+      '__proto__',
+      'toString',
+      'UNKNOWN'
+    ]) {
+      const text = localizeShopError(new RequestError('private backend message', code), t);
+      expect(text).not.toContain('private backend message');
+      expect(text.length).toBeGreaterThan(0);
+    }
+    expect(localizeShopError(new Error('private transport detail'), t)).toBe(
+      fr['Something went wrong. Please try again.']
+    );
   });
   it('changes money formatting without currency conversion or SKU/content mutation', () => {
     expect(formatCents(12900)).toBe('¥129.00');

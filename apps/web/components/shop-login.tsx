@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { useLocale } from '@/components/locale-provider';
 import { api } from '@/lib/api';
-import { localizeError } from '@/lib/localize-error';
+import { localizeShopError } from '@/lib/shop-error';
 import { CART_CHANGED_EVENT } from '@/lib/shop';
 import type { ApiResponse, User } from '@repo/types';
 
 export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
-  const { st: t, locale } = useLocale();
+  const { st: t } = useLocale();
   const [busy, setBusy] = useState(false);
   const [register, setRegister] = useState(false);
   const [error, setError] = useState<unknown>(null);
@@ -44,7 +44,7 @@ export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
       <p>{t('Keep your cart and orders together. This preview store uses simulated payments.')}</p>
       {Boolean(error) && (
         <p role="alert" className="form-error">
-          {localizeError(error, locale, t)}
+          {localizeShopError(error, t)}
         </p>
       )}
       <form onSubmit={submit}>
