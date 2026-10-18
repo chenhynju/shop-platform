@@ -1,19 +1,11 @@
-'use client';
-import Link from 'next/link';
-import { LanguageSwitcher, useLocale } from '@/components/locale-provider';
+import { ManualViewer } from '@/components/manual-viewer';
 import manual from '@/content/manual.json';
-export default function ManualPage() {
-  const { locale, t } = useLocale();
-  const content = manual[locale];
+function ManualContent({ content, label }: { content: typeof manual.en; label: string }) {
   return (
-    <main className="manual-shell">
-      <nav className="manual-nav" aria-label={t('Main navigation')}>
-        <Link href="/workspace">← fullstack / toolkit</Link>
-        <LanguageSwitcher />
-      </nav>
+    <>
       <h1>{content.title}</h1>
       <p className="manual-intro">{content.intro}</p>
-      <nav className="manual-toc" aria-label={t('User manual')}>
+      <nav className="manual-toc" aria-label={label}>
         {content.sections.map((section) => (
           <a key={section.id} href={'#' + section.id}>
             {section.title}
@@ -30,6 +22,15 @@ export default function ManualPage() {
           </ol>
         </section>
       ))}
-    </main>
+    </>
+  );
+}
+
+export default function ManualPage() {
+  return (
+    <ManualViewer
+      english={<ManualContent content={manual.en} label="User manual" />}
+      chinese={<ManualContent content={manual['zh-CN']} label="用户手册" />}
+    />
   );
 }
