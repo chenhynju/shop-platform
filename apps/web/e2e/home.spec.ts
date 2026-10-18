@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 const password = 'browser-test-password-2971';
 const suffix = process.env.E2E_RUN_ID ?? Date.now() + '-' + Math.random().toString(16).slice(2, 8);
 async function register(page: Page, email: string, name: string) {
-  await page.goto('/');
+  await page.goto('/workspace');
   await page.getByLabel('Your name', { exact: true }).fill(name);
   await page.getByLabel('Email address').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
@@ -10,7 +10,7 @@ async function register(page: Page, email: string, name: string) {
   await expect(page.getByRole('button', { name: '+ New project' })).toBeVisible();
 }
 test('anonymous landing, API protection and mobile layout', async ({ page, request, baseURL }) => {
-  await page.goto('/');
+  await page.goto('/workspace');
   await expect(
     page.getByRole('heading', { name: 'Start strong. Build what matters.' })
   ).toBeVisible();
@@ -116,7 +116,7 @@ test('explicitly provisioned administrator can inspect the member directory', as
     !process.env.E2E_ADMIN_EMAIL || !process.env.E2E_ADMIN_PASSWORD,
     'No explicit operator test credentials supplied.'
   );
-  await page.goto('/');
+  await page.goto('/workspace');
   await page.getByRole('button', { name: 'Sign in', exact: true }).first().click();
   await page.getByLabel('Email address').fill(process.env.E2E_ADMIN_EMAIL!);
   await page.getByLabel('Password', { exact: true }).fill(process.env.E2E_ADMIN_PASSWORD!);

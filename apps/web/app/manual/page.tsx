@@ -8,7 +8,7 @@ export default function ManualPage() {
   return (
     <main className="manual-shell">
       <nav className="manual-nav" aria-label={t('Main navigation')}>
-        <Link href="/">← fullstack / toolkit</Link>
+        <Link href="/workspace">← fullstack / toolkit</Link>
         <LanguageSwitcher />
       </nav>
       <h1>{content.title}</h1>

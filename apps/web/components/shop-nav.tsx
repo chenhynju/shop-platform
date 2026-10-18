@@ -29,19 +29,19 @@ export function ShopNav() {
   }, [loadCartCount]);
 
   function isActive(href: string) {
-    return href === '/shop' ? pathname === href : pathname.startsWith(href);
+    return href === '/shop' ? pathname === href || pathname === '/' : pathname.startsWith(href);
   }
 
   return (
     <header className="shop-header">
       <div className="shop-header-inner">
-        <Link href="/shop" className="shop-brand">
+        <Link href="/" className="shop-brand">
           <span className="brand-mark small" aria-hidden="true">
             <span />
             <span />
             <span />
           </span>
-          helloWorldA <span className="shop-brand-light">/ store</span>
+          PURELAMP <span className="shop-brand-light">everyday finds</span>
         </Link>
         <nav className="shop-nav" aria-label="Shop navigation">
           {links.map((link) => (
@@ -59,8 +59,8 @@ export function ShopNav() {
           ))}
         </nav>
         <div className="shop-header-right">
-          <Link href="/" className="shop-back-link">
-            ← Workspace
+          <Link href="/account" className="shop-back-link">
+            Account ↗
           </Link>
         </div>
       </div>
