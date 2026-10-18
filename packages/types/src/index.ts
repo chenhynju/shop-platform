@@ -3,7 +3,7 @@ export interface User {
   email: string;
   name: string | null;
   createdAt: string;
-  role: 'USER' | 'ADMIN';
+  role: 'USER' | 'ADMIN' | 'MERCHANT';
 }
 export type ProjectStatus = 'PLANNED' | 'ACTIVE' | 'DONE';
 export interface Project {

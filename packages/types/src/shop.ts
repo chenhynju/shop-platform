@@ -51,3 +51,10 @@ export interface PromotionInfo {
   threshold: number | null;
   active: boolean;
 }
+export interface MerchantOrder {
+  orderNo: string;
+  status: OrderStatus;
+  createdAt: string;
+  subtotal: number;
+  items: (OrderItemView & { id: number; fulfillmentStatus: string })[];
+}

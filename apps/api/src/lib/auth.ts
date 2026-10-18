@@ -15,13 +15,24 @@ declare module 'fastify' {
     } | null;
   }
 }
+export type Audience = 'customer' | 'seller' | 'admin';
 export const SESSION_COOKIE = 'toolkit_session';
+export const sessionCookie = (audience: Audience) =>
+  audience === 'customer' ? SESSION_COOKIE : `shop_${audience}_session`;
+export function requestAudience(request: FastifyRequest): Audience {
+  const path = request.url.split('?')[0]!;
+  return path.startsWith('/api/admin/')
+    ? 'admin'
+    : path.startsWith('/api/seller/') || path.startsWith('/api/shop/merchant/')
+      ? 'seller'
+      : 'customer';
+}
 export const tokenHash = (value: string) => createHash('sha256').update(value).digest('hex');
 export const publicUser = (user: NonNullable<FastifyRequest['currentUser']>): User => ({
   id: user.id,
   email: user.email,
   name: user.name,
-  role: user.role === 'ADMIN' ? ('ADMIN' as const) : ('USER' as const),
+  role: user.role === 'ADMIN' ? 'ADMIN' : user.role === 'MERCHANT' ? 'MERCHANT' : 'USER',
   createdAt: user.createdAt.toISOString()
 });
 export function requireUser(request: FastifyRequest) {
@@ -35,19 +46,26 @@ export function requireAdmin(request: FastifyRequest) {
     throw new AppError(403, 'FORBIDDEN', 'Administrator access is required.');
   return user;
 }
+export function requireMerchant(request: FastifyRequest) {
+  const user = requireUser(request);
+  if (user.role !== 'MERCHANT')
+    throw new AppError(403, 'FORBIDDEN', 'Merchant access is required.');
+  return user;
+}
 export async function createSession(
   db: PrismaClient,
   userId: number,
   reply: FastifyReply,
-  config: AppConfig
+  config: AppConfig,
+  audience: Audience = 'customer'
 ) {
   const token = randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   await db.$transaction([
     db.session.deleteMany({ where: { userId, expiresAt: { lt: new Date() } } }),
-    db.session.create({ data: { userId, tokenHash: tokenHash(token), expiresAt } })
+    db.session.create({ data: { userId, tokenHash: tokenHash(token), expiresAt, audience } })
   ]);
-  reply.setCookie(SESSION_COOKIE, token, {
+  reply.setCookie(sessionCookie(audience), token, {
     path: '/',
     httpOnly: true,
     sameSite: 'lax',

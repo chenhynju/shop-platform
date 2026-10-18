@@ -152,7 +152,8 @@ export const shopOrderRoutes: FastifyPluginAsync<{ db: PrismaClient }> = async (
                     sku: item.sku,
                     name: product.name,
                     price: product.price,
-                    quantity: item.quantity
+                    quantity: item.quantity,
+                    merchantId: product.merchantId
                   };
                 })
               },
