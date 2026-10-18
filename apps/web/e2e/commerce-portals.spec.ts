@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { randomBytes, scryptSync } from 'node:crypto';
-import { PrismaClient } from '../../../packages/db/node_modules/@prisma/client';
+import { PrismaClient } from '../../../packages/db/src/index';
 
 test('isolated portals: seller catalog, tenant denial, platform oversight and separate sessions', async ({
   page
