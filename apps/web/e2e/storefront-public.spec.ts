@@ -32,6 +32,34 @@ test('released storefront: real catalog, search, guest protection and account na
     await page.getByRole('searchbox', { name: 'Search products' }).press('Enter');
     await expect(page.locator('article.product-card')).toHaveCount(products.length);
   }
+  if (products.length) {
+    const product = products[0]!;
+    const badge = page.locator('.market-stock-tag').first();
+    await expect(badge).toBeVisible();
+    expect((await badge.boundingBox())!.height).toBeLessThan(32);
+    await page.goto('/shop/product/' + encodeURIComponent(product.sku));
+    await expect(page.getByRole('heading', { name: product.name, exact: true })).toBeVisible();
+    await expect(page.getByText('Payments are simulated.', { exact: false })).toBeVisible();
+    await expect
+      .poll(() =>
+        page
+          .locator('.product-atlas')
+          .first()
+          .evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)
+      )
+      .toBe(true);
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true
+    );
+    await page.screenshot({
+      path: 'test-results/marketplace-deployed-detail-mobile.png',
+      fullPage: true
+    });
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/');
+    await expect(page.locator('article.product-card')).toHaveCount(products.length);
+  }
   expect(await page.evaluate(async () => (await fetch('/api/shop/cart')).status)).toBe(401);
   expect(await page.evaluate(async () => (await fetch('/api/shop/orders')).status)).toBe(401);
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));

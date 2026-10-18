@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import { ProductArt } from './product-art';
+'use client';
+import { useState } from 'react';
 
 export function ProductMedia({
   name,
@@ -10,6 +10,7 @@ export function ProductMedia({
   scene?: boolean;
   priority?: boolean;
 }) {
+  const [failed, setFailed] = useState(false);
   const tile = scene
     ? 5
     : /keyboard|键盘/i.test(name)
@@ -23,21 +24,29 @@ export function ProductMedia({
             : /mat|垫/i.test(name)
               ? 4
               : null;
-  if (tile === null)
+  if (tile === null || failed)
     return (
       <div className="product-photo fallback">
-        <ProductArt name={name} />
+        <div role="img" aria-label={`${name} — image unavailable`}>
+          <span aria-hidden="true" style={{ fontSize: 48 }}>
+            ◇
+          </span>
+          <p>Product image unavailable</p>
+        </div>
       </div>
     );
   return (
     <div className="product-photo" role="img" aria-label={`${name} — AI-generated sample image`}>
-      <Image
-        src="/images/catalog-atlas-v2.png"
+      {/* Optimized at build time: one shared 54 KB WebP atlas; no image client runtime. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/images/catalog-atlas-v2.webp"
         alt=""
-        width={1536}
-        height={1024}
-        sizes="1080px"
-        priority={priority}
+        width={1080}
+        height={720}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        onError={() => setFailed(true)}
         className="product-atlas"
         style={{ left: `${-(tile % 3) * 100}%`, top: `${-Math.floor(tile / 3) * 100}%` }}
       />

@@ -12,7 +12,7 @@
 
 工具：内置 image_gen。生成规范：原创无品牌产品摄影，3×2 等方格图集，依次为象牙白 87 键键盘、灰色 USB-C 扩展坞、鼠尾草绿陶瓷杯、白色鼠标、深灰毛毡桌垫、桌面静物；柔和白底、柔光、无文字/商标/边框。用途为概念样例，不能作为真实货物照片。页面明确标识 AI 生成样例。
 
-资产：apps/web/public/images/catalog-atlas-v2.png；通过 Next Image 优化交付，Docker 运行镜像补齐 public 目录。
+资产：apps/web/public/images/catalog-atlas-v2.png；原 PNG 另以 Sharp 仅缩放/编码为 1080×720 WebP（54,126 字节），所有卡片共享缓存；图片错误显示可访问的缺图状态，避免额外图片组件运行时代码，Docker 运行镜像补齐 public 目录。
 
 ## 验证与发布
 
