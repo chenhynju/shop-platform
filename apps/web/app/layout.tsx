@@ -6,9 +6,9 @@ import { LocaleProvider } from '@/components/locale-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'fullstack-toolkit',
+  title: 'Purelamp | Everyday finds',
   description:
-    'A reusable full-stack foundation with authentication, private projects and deployment tooling.'
+    'Explore the Purelamp catalog, find your next everyday favorite, and manage your cart and orders.'
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {

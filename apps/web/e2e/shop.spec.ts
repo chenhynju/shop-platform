@@ -26,7 +26,8 @@ async function request<T>(page: Page, path: string, method = 'GET', body?: objec
 }
 
 async function register(page: Page, email: string, name: string) {
-  await page.goto('/');
+  await page.goto('/account');
+  await page.getByRole('button', { name: 'New here? Create account', exact: true }).click();
   await page.getByLabel('Your name', { exact: true }).fill(name);
   await page.getByLabel('Email address', { exact: true }).fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
@@ -58,8 +59,8 @@ test('real shop journey: cart, priced checkout, mock pay, cancellation and user 
     const admin = await browser.newContext({ baseURL });
     try {
       const account = await admin.newPage();
-      await account.goto('/');
-      await account.getByRole('button', { name: 'Sign in', exact: true }).first().click();
+      await account.goto('/account');
+      // Customer account login is displayed directly.
       await account.getByLabel('Email address', { exact: true }).fill(adminEmail!);
       await account.getByLabel('Password', { exact: true }).fill(adminPassword!);
       await account.getByRole('button', { name: 'Sign in', exact: true }).last().click();
@@ -168,7 +169,7 @@ test('real shop journey: cart, priced checkout, mock pay, cancellation and user 
   expect((await request<ApiResponse<OrderView[]>>(page, '/shop/orders')).body.data).toHaveLength(2);
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.goto('/');
+  await page.goto('/account');
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   expect((await request(page, '/shop/orders')).status).toBe(401);
 });

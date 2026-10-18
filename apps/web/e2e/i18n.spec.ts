@@ -8,7 +8,7 @@ test('English is the server default, preference survives refresh and manual navi
     const page = await context.newPage();
     page.setDefaultTimeout(15000);
     page.setDefaultNavigationTimeout(30000);
-    const initial = await page.goto('/');
+    const initial = await page.goto('/workspace');
     expect(await initial!.text()).toContain('lang="en"');
     await expect(
       page.getByRole('heading', { name: 'Start strong. Build what matters.' })
@@ -42,7 +42,7 @@ test('Chinese CRUD, plain user content, localized errors and unchanged session o
   page
 }) => {
   const id = Date.now() + '-' + Math.random().toString(16).slice(2, 8);
-  await page.goto('/');
+  await page.goto('/workspace');
   await page.getByRole('combobox', { name: 'Language', exact: true }).selectOption('zh-CN');
   await page.getByLabel('姓名', { exact: true }).fill('中文验收');
   const email = 'i18n-' + id + '@example.com';
