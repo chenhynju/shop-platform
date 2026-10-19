@@ -8,7 +8,13 @@ import { localizeShopError } from '@/lib/shop-error';
 import { CART_CHANGED_EVENT } from '@/lib/shop';
 import type { ApiResponse, User } from '@repo/types';
 
-export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
+export function ShopLogin({
+  onSuccess,
+  audience
+}: {
+  onSuccess: (user: User) => void;
+  audience?: 'seller' | 'admin';
+}) {
   const { st: t } = useLocale();
   const [busy, setBusy] = useState(false);
   const [register, setRegister] = useState(false);
@@ -20,14 +26,17 @@ export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
     setError(null);
     const data = new FormData(event.currentTarget);
     try {
-      const result = await api<ApiResponse<User>>(register ? '/auth/register' : '/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({
-          ...(register ? { name: String(data.get('name')) } : {}),
-          email: String(data.get('email')),
-          password: String(data.get('password'))
-        })
-      });
+      const result = await api<ApiResponse<User>>(
+        audience ? `/${audience}/auth/login` : register ? '/auth/register' : '/auth/login',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            ...(register ? { name: String(data.get('name')) } : {}),
+            email: String(data.get('email')),
+            password: String(data.get('password'))
+          })
+        }
+      );
       window.dispatchEvent(new Event(CART_CHANGED_EVENT));
       onSuccess(result.data);
     } catch (err) {
@@ -39,7 +48,13 @@ export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
 
   return (
     <div className="shop-login-card">
-      <span className="eyebrow">{t('YOUR PURELAMP ACCOUNT')}</span>
+      <span className="eyebrow">
+        {audience === 'seller'
+          ? t('Merchant center')
+          : audience === 'admin'
+            ? t('Platform administration')
+            : t('YOUR PURELAMP ACCOUNT')}
+      </span>
       <h1>{register ? t('Create your account') : t('Sign in to continue')}</h1>
       <p>{t('Keep your cart and orders together. This preview store uses simulated payments.')}</p>
       {Boolean(error) && (
@@ -83,17 +98,19 @@ export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
         </button>
       </form>
       <p className="shop-login-footnote">
-        <button
-          type="button"
-          className="text-button"
-          disabled={busy}
-          onClick={() => {
-            setRegister(!register);
-            setError(null);
-          }}
-        >
-          {register ? t('Already have an account? Sign in') : t('New here? Create account')}
-        </button>
+        {!audience && (
+          <button
+            type="button"
+            className="text-button"
+            disabled={busy}
+            onClick={() => {
+              setRegister(!register);
+              setError(null);
+            }}
+          >
+            {register ? t('Already have an account? Sign in') : t('New here? Create account')}
+          </button>
+        )}
         {' · '}
         <Link href="/">{t('Back to shopping')}</Link>
       </p>
