@@ -17,6 +17,7 @@ async function apiLogin(record) {
   await json(
     await context.post(`/api/${record.audience}/auth/login`, {
       headers: mutation,
+      maxRetries: 2,
       data: { email: record.email, password: record.password }
     })
   );
