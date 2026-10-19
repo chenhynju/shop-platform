@@ -69,7 +69,9 @@ export const portalRoutes: FastifyPluginAsync<{ db: PrismaClient; config: AppCon
       db.merchant.count(),
       db.product.count(),
       db.order.count(),
-      db.user.count({ where: { role: 'USER' } })
+      db.user.count({
+        where: { role: 'USER', merchantMemberships: { none: {} }, platformMembership: { is: null } }
+      })
     ]);
     return {
       data: {

@@ -84,6 +84,7 @@ describe('portal session audiences and revocable memberships', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).not.toMatch(/passwordHash|tokenHash/);
     }
+    expect((await get('/api/admin/overview', adminCookie)).json().data.customers).toBe(1);
     expect(
       (await get('/api/admin/merchants', adminCookie)).json().data[0].members[0].user.email
     ).toBe('portal-seller@example.test');
