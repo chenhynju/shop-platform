@@ -128,6 +128,18 @@ test('released account: real registration, private cart, logout and login', asyn
   await expect(page.getByRole('heading', { name: 'Your cart', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Increase ' + product!.name, exact: true }).click();
   await expect(page.locator('.stepper span')).toHaveText('2');
+  if (process.env.E2E_COMMERCE_LANGUAGES_LIVE === '1') {
+    for (const locale of ['zh-CN', 'fr', 'es', 'en']) {
+      await page.locator('header .language-switcher select').selectOption(locale);
+      await expect(page.locator('html')).toHaveAttribute('lang', locale);
+      await expect(page.locator('.stepper span')).toHaveText('2');
+      const me = await page.evaluate(async () => (await fetch('/api/auth/me')).json());
+      expect(me.data.email).toBe(email);
+      expect(me.data.role).toBe('USER');
+      await page.reload();
+      await expect(page.locator('.stepper span')).toHaveText('2');
+    }
+  }
   await page.goto('/account');
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   expect(await page.evaluate(async () => (await fetch('/api/shop/cart')).status)).toBe(401);

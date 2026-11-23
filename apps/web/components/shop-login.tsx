@@ -1,14 +1,15 @@
 'use client';
+
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { useLocale } from '@/components/locale-provider';
 import { api } from '@/lib/api';
-import { localizeError } from '@/lib/localize-error';
+import { localizeShopError } from '@/lib/shop-error';
 import { CART_CHANGED_EVENT } from '@/lib/shop';
 import type { ApiResponse, User } from '@repo/types';
 
 export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
-  const { locale } = useLocale();
+  const { st: t } = useLocale();
   const [busy, setBusy] = useState(false);
   const [register, setRegister] = useState(false);
   const [error, setError] = useState<unknown>(null);
@@ -38,23 +39,22 @@ export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
 
   return (
     <div className="shop-login-card">
-      <span className="eyebrow">YOUR PURELAMP ACCOUNT</span>
-      <h1>{register ? 'Create your account' : 'Sign in to continue'}</h1>
-      <p>Keep your cart and orders together. This preview store uses simulated payments.</p>
+      <span className="eyebrow">{t('YOUR PURELAMP ACCOUNT')}</span>
+      <h1>{register ? t('Create your account') : t('Sign in to continue')}</h1>
+      <p>{t('Keep your cart and orders together. This preview store uses simulated payments.')}</p>
       {Boolean(error) && (
         <p role="alert" className="form-error">
-          {localizeError(error, locale)}
+          {localizeShopError(error, t)}
         </p>
       )}
       <form onSubmit={submit}>
         {register && (
           <label>
-            Your name
-            <input name="name" required maxLength={80} autoComplete="name" />
+            {t('Your name')} <input name="name" required maxLength={80} autoComplete="name" />
           </label>
         )}
         <label>
-          Email address
+          {t('Email address')}{' '}
           <input
             name="email"
             type="email"
@@ -66,7 +66,7 @@ export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
           />
         </label>
         <label>
-          Password
+          {t('Password')}{' '}
           <input
             name="password"
             type="password"
@@ -74,11 +74,11 @@ export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
             required
             minLength={12}
             maxLength={128}
-            placeholder="At least 12 characters"
+            placeholder={t('At least 12 characters')}
           />
         </label>
         <button className="button primary full-width" disabled={busy}>
-          {busy ? 'Please wait…' : register ? 'Create account' : 'Sign in'}{' '}
+          {busy ? t('Please wait…') : register ? t('Create account') : t('Sign in')}{' '}
           <span aria-hidden="true">↗</span>
         </button>
       </form>
@@ -92,10 +92,10 @@ export function ShopLogin({ onSuccess }: { onSuccess: (user: User) => void }) {
             setError(null);
           }}
         >
-          {register ? 'Already have an account? Sign in' : 'New here? Create account'}
+          {register ? t('Already have an account? Sign in') : t('New here? Create account')}
         </button>
         {' · '}
-        <Link href="/">Back to shopping</Link>
+        <Link href="/">{t('Back to shopping')}</Link>
       </p>
     </div>
   );

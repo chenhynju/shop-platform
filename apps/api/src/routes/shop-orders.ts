@@ -6,7 +6,7 @@
 //   3) BullMQ 延迟任务兜底：10 分钟未支付自动取消并双端回补。
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
-import { prisma } from '@repo/db';
+import type { PrismaClient } from '@repo/db';
 import { deductStock, releaseStock } from '../lib/redis';
 import { enqueueOrderTimeout } from '../lib/queue';
 import { requireUser } from '../lib/auth';
@@ -27,7 +27,7 @@ function makeOrderNo(): string {
 }
 
 // 促销计算：返回优惠后总价与命中的促销
-async function applyPromotion(total: number, promoCode?: string) {
+async function applyPromotion(prisma: PrismaClient, total: number, promoCode?: string) {
   if (!promoCode) return { total, promotion: null as PromotionInfo | null };
   const promo = await prisma.promotion.findUnique({ where: { code: promoCode, active: true } });
   if (!promo) return { total, promotion: null };
@@ -53,7 +53,7 @@ async function applyPromotion(total: number, promoCode?: string) {
   };
 }
 
-async function toOrderView(orderId: number): Promise<OrderView> {
+async function toOrderView(prisma: PrismaClient, orderId: number): Promise<OrderView> {
   const order = await prisma.order.findUniqueOrThrow({
     where: { id: orderId },
     include: { items: true }
@@ -73,7 +73,10 @@ async function toOrderView(orderId: number): Promise<OrderView> {
   };
 }
 
-export const shopOrderRoutes: FastifyPluginAsync = async (app) => {
+export const shopOrderRoutes: FastifyPluginAsync<{ db: PrismaClient }> = async (
+  app,
+  { db: prisma }
+) => {
   app.addHook('onRequest', async (req) => {
     requireUser(req);
   });
@@ -121,7 +124,7 @@ export const shopOrderRoutes: FastifyPluginAsync = async (app) => {
       (sum, item) => sum + (bySku.get(item.sku)?.price ?? 0) * item.quantity,
       0
     );
-    const { total, promotion } = await applyPromotion(subtotal, promoCode);
+    const { total, promotion } = await applyPromotion(prisma, subtotal, promoCode);
 
     // ③ DB 事务：乐观锁扣库存 + 建订单 + 建支付单
     // timeout：跨地域部署/隧道延迟下默认 5s 不足，放宽到 30s
@@ -175,7 +178,7 @@ export const shopOrderRoutes: FastifyPluginAsync = async (app) => {
 
       void promotion;
       reply.code(201);
-      return { data: await toOrderView(orderId) };
+      return { data: await toOrderView(prisma, orderId) };
     } catch (error) {
       // DB 失败 → 回补 Redis
       for (const done of deducted) await releaseStock(done.sku, done.quantity);
@@ -310,7 +313,7 @@ export const shopOrderRoutes: FastifyPluginAsync = async (app) => {
         )
       ]);
       for (const item of order.items) await releaseStock(item.sku, item.quantity);
-      return { data: await toOrderView(order.id) };
+      return { data: await toOrderView(prisma, order.id) };
     }
   );
 };

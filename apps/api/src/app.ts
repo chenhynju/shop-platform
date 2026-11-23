@@ -112,9 +112,9 @@ export async function buildApp(
   userRoutes(app, db);
   projectRoutes(app, db);
   // helloWorldA 电商模块
-  await app.register(shopProductRoutes);
-  await app.register(shopCartRoutes);
-  await app.register(shopOrderRoutes);
-  await app.register(shopPromotionRoutes);
+  await app.register(shopProductRoutes, { db });
+  await app.register(shopCartRoutes, { db });
+  await app.register(shopOrderRoutes, { db });
+  await app.register(shopPromotionRoutes, { db });
   return app;
 }

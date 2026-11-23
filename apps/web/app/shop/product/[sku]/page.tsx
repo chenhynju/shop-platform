@@ -1,4 +1,6 @@
 'use client';
+import { useLocale } from '@/components/locale-provider';
+
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -10,6 +12,7 @@ import { categories, categoryOf } from '@/lib/catalog';
 import { useShopAuth } from '@/lib/use-shop-auth';
 
 export default function ProductPage() {
+  const { st: t, sample, locale } = useLocale();
   const { sku } = useParams<{ sku: string }>();
   const { state: auth } = useShopAuth();
   const [product, setProduct] = useState<ShopProduct | null>(null);
@@ -30,7 +33,7 @@ export default function ProductPage() {
         if (active) setProduct(result.data.find((p) => p.sku === sku) ?? null);
       })
       .catch(() => {
-        if (active) setError('We couldn’t load this product. Please try again.');
+        if (active) setError(t('We couldn’t load this product. Please try again.'));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -38,7 +41,7 @@ export default function ProductPage() {
     return () => {
       active = false;
     };
-  }, [sku, attempt]);
+  }, [sku, attempt, t]);
   async function add() {
     if (!product || busy || auth.status !== 'authed') return;
     setBusy(true);
@@ -50,9 +53,11 @@ export default function ProductPage() {
         body: JSON.stringify({ sku: product.sku, quantity })
       });
       window.dispatchEvent(new Event(CART_CHANGED_EVENT));
-      setNotice(`${product.name} added to your cart.`);
+      setNotice(
+        t('{name} added to your cart.', { name: sample(product.sku, 'name', product.name) })
+      );
     } catch {
-      setError('We couldn’t add this item. Please try again.');
+      setError(t('We couldn’t add this item. Please try again.'));
     } finally {
       setBusy(false);
     }
@@ -60,64 +65,71 @@ export default function ProductPage() {
   if (loading)
     return (
       <div className="market-loading" role="status">
-        Loading product…
+        {t('Loading product…')}{' '}
       </div>
     );
   if (!product)
     return (
       <div className="shop-empty">
-        <h1>{error ? 'Product unavailable' : 'Product not found'}</h1>
-        <p>{error || 'This item may no longer be available in the collection.'}</p>
+        <h1>{error ? t('Product unavailable') : t('Product not found')}</h1>
+        <p>{error || t('This item may no longer be available in the collection.')}</p>
         {error && (
           <button className="button secondary" onClick={() => setAttempt(attempt + 1)}>
-            Retry
+            {t('Retry')}{' '}
           </button>
         )}
         <Link href="/shop" className="market-button">
-          Browse all products →
+          {t('Browse all products →')}{' '}
         </Link>
       </div>
     );
   const category = categories.find((c) => c.id === categoryOf(product));
   return (
     <div className="market-detail">
-      <nav className="market-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/">Home</Link>
+      <nav className="market-breadcrumb" aria-label={t('Breadcrumb')}>
+        <Link href="/">{t('Home')}</Link>
         <span>/</span>
-        <Link href={'/shop?category=' + category?.id}>{category?.label}</Link>
+        <Link href={'/shop?category=' + category?.id}>{t(category?.label ?? 'All products')}</Link>
         <span>/</span>
-        <span>{product.name}</span>
+        <span>{sample(product.sku, 'name', product.name)}</span>
       </nav>
       <div className="market-product-detail">
-        <section className="market-gallery" aria-label="Product image">
-          <ProductMedia name={product.name} priority />
-          <p>AI-generated sample image. Actual specifications are shown in the listing.</p>
+        <section className="market-gallery" aria-label={t('Product image')}>
+          <ProductMedia
+            label={sample(product.sku, 'name', product.name)}
+            name={product.name}
+            priority
+          />
+          <p>{t('AI-generated sample image. Actual specifications are shown in the listing.')}</p>
         </section>
         <section className="market-product-info">
-          <p className="market-kicker">{category?.label}</p>
-          <h1>{product.name}</h1>
+          <p className="market-kicker">{t(category?.label ?? 'All products')}</p>
+          <h1>{sample(product.sku, 'name', product.name)}</h1>
           <p className="market-detail-description">
-            {product.description || 'A sample from the Purelamp collection.'}
+            {sample(product.sku, 'description', product.description) ||
+              t('A sample from the Purelamp collection.')}
           </p>
           <div className="market-detail-price">
-            {formatCents(product.price)} <span>CNY</span>
+            {formatCents(product.price, locale)} <span>CNY</span>
           </div>
           <p className="market-detail-stock">
-            {product.stock > 0 ? `In stock · ${product.stock} available` : 'Currently sold out'}
+            {product.stock > 0
+              ? t('In stock · {count} available', { count: product.stock })
+              : t('Currently sold out')}
           </p>
           <div className="market-detail-specs">
             <div>
-              <span>Product code</span>
+              <span>{t('Product code')}</span>
               <strong>{product.sku}</strong>
             </div>
             <div>
-              <span>Listing</span>
-              <strong>Sample catalog</strong>
+              <span>{t('Listing')}</span>
+              <strong>{t('Sample catalog')}</strong>
             </div>
           </div>
           {product.stock > 0 && (
             <div className="market-quantity">
-              <label htmlFor="product-quantity">Quantity</label>
+              <label htmlFor="product-quantity">{t('Quantity')}</label>
               <input
                 id="product-quantity"
                 type="number"
@@ -142,15 +154,15 @@ export default function ProductPage() {
                 disabled={busy || product.stock <= 0}
                 onClick={() => void add()}
               >
-                {product.stock <= 0 ? 'Sold out' : busy ? 'Adding…' : '+ Add to cart'}
+                {product.stock <= 0 ? t('Sold out') : busy ? t('Adding…') : t('+ Add to cart')}
               </button>
             ) : (
               <Link className="market-button" href="/account">
-                Sign in to add to cart →
+                {t('Sign in to add to cart →')}{' '}
               </Link>
             )}
             <Link className="market-button secondary" href="/shop/cart">
-              View cart
+              {t('View cart')}{' '}
             </Link>
           </div>
           {error && (
@@ -162,29 +174,33 @@ export default function ProductPage() {
             {notice}
           </p>
           <div className="market-detail-policy">
-            <strong>Shopping in preview</strong>
+            <strong>{t('Shopping in preview')}</strong>
             <p>
-              Payments are simulated. Shipping, import charges and return services are not yet
-              configured for real orders.
+              {t(
+                'Payments are simulated. Shipping, import charges and return services are not yet configured for real orders.'
+              )}{' '}
             </p>
-            <Link href="/shop/guide">Read the shopping guide →</Link>
+            <Link href="/shop/guide">{t('Read the shopping guide →')}</Link>
           </div>
         </section>
       </div>
       <section className="market-description">
-        <h2>About this product</h2>
-        <p>{product.description || 'No additional description has been provided.'}</p>
+        <h2>{t('About this product')}</h2>
+        <p>
+          {sample(product.sku, 'description', product.description) ||
+            t('No additional description has been provided.')}
+        </p>
         <dl>
           <dt>SKU</dt>
           <dd>{product.sku}</dd>
-          <dt>Price currency</dt>
-          <dd>CNY — Chinese yuan</dd>
-          <dt>Availability</dt>
-          <dd>{product.stock > 0 ? 'Available in the sample catalog' : 'Sold out'}</dd>
+          <dt>{t('Price currency')}</dt>
+          <dd>{t('CNY — Chinese yuan')}</dd>
+          <dt>{t('Availability')}</dt>
+          <dd>{product.stock > 0 ? t('Available in the sample catalog') : t('Sold out')}</dd>
         </dl>
       </section>
       <Link href="/shop" className="market-back">
-        ← Continue exploring
+        {t('← Continue exploring')}{' '}
       </Link>
     </div>
   );

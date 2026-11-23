@@ -1,4 +1,6 @@
 'use client';
+import { LanguageSwitcher, useLocale } from '@/components/locale-provider';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -15,6 +17,7 @@ const links = [
 ] as const;
 
 export function ShopNav() {
+  const { st: t } = useLocale();
   const pathname = usePathname();
   const [cartCount, setCartCount] = useState<number | null>(null);
 
@@ -36,17 +39,18 @@ export function ShopNav() {
   return (
     <>
       <div className="market-topline">
-        <span>PURELAMP MARKETPLACE</span>
-        <span>Preview catalog · CNY prices · Simulated checkout</span>
+        <span>{t('PURELAMP MARKETPLACE')}</span>
+        <span>{t('Preview catalog · CNY prices · Simulated checkout')}</span>
       </div>
       <header className="shop-header">
         <div className="shop-header-inner">
-          <Link href="/" className="shop-brand" aria-label="Purelamp home">
+          <Link href="/" className="shop-brand" aria-label={t('Purelamp home')}>
             <span className="market-logo">p</span>purelamp
             <span className="market-brand-dot">.</span>
           </Link>
           <ShopSearch />
-          <nav className="shop-nav" aria-label="Shop navigation">
+          <LanguageSwitcher />
+          <nav className="shop-nav" aria-label={t('Shop navigation')}>
             {links.map((link) => (
               <Link
                 key={link.href}
@@ -54,29 +58,29 @@ export function ShopNav() {
                 className={isActive(link.href) ? 'active' : ''}
                 aria-current={isActive(link.href) ? 'page' : undefined}
               >
-                {link.label}
+                {t(link.label)}
                 {link.href === '/shop/cart' && cartCount !== null && cartCount > 0 && (
                   <span className="shop-nav-badge">{cartCount}</span>
                 )}
               </Link>
             ))}
           </nav>
-          <Link href="/account" className="shop-back-link" aria-label="Account">
-            Account <span aria-hidden="true">↗</span>
+          <Link href="/account" className="shop-back-link" aria-label={t('Account')}>
+            {t('Account')} <span aria-hidden="true">↗</span>
           </Link>
         </div>
         <div className="market-category-nav">
           <div>
             <Link href="/shop" className="market-all">
-              ☰ All categories
+              {t('☰ All categories')}{' '}
             </Link>
             {categories.slice(1).map((c) => (
               <Link key={c.id} href={'/shop?category=' + c.id}>
-                {c.label}
+                {t(c.label)}
               </Link>
             ))}
-            <Link href="/shop?stock=available">In-stock finds</Link>
-            <Link href="/shop/guide">Shopping guide</Link>
+            <Link href="/shop?stock=available">{t('In-stock finds')}</Link>
+            <Link href="/shop/guide">{t('Shopping guide')}</Link>
           </div>
         </div>
       </header>

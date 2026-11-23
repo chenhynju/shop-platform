@@ -1514,3 +1514,36 @@
   bottom: auto;
   transform: translateY(-50%);
 }
+
+.shop-shell .shop-header-inner {
+  gap: 16px;
+}
+.shop-shell .shop-header-inner > .language-switcher {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.shop-shell .shop-header-inner > .language-switcher select {
+  width: 100px;
+  font-size: 12px;
+  padding: 8px;
+  border-radius: 6px;
+}
+@media (max-width: 760px) {
+  .shop-shell .shop-header-inner {
+    gap: 8px;
+  }
+  .shop-shell .shop-header-inner > .language-switcher {
+    order: 4;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .shop-shell .shop-header-inner > .language-switcher select {
+    padding: 4px 8px;
+    font-size: 11px;
+    min-height: 30px;
+  }
+  .market-hero h1 {
+    overflow-wrap: anywhere;
+  }
+}

@@ -56,6 +56,7 @@ describe('shop routes', () => {
       payload: body
     });
     expect(created.statusCode).toBe(201);
+    expect(await ctx.db.product.findUnique({ where: { sku: body.sku } })).not.toBeNull();
 
     const duplicate = await ctx.app.inject({
       method: 'POST',
@@ -185,6 +186,7 @@ describe('shop routes', () => {
     });
     expect(order.statusCode).toBe(201);
     const first = order.json().data;
+    expect(await ctx.db.order.findUnique({ where: { orderNo: first.orderNo } })).not.toBeNull();
 
     const list = await ctx.app.inject({ url: '/api/shop/orders', headers: { cookie } });
     expect(list.statusCode).toBe(200);

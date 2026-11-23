@@ -1,15 +1,20 @@
 'use client';
+import { useLocale } from '@/components/locale-provider';
+
 import { useState } from 'react';
 
 export function ProductMedia({
   name,
+  label,
   scene = false,
   priority = false
 }: {
   name: string;
+  label?: string;
   scene?: boolean;
   priority?: boolean;
 }) {
+  const { st: t } = useLocale();
   const [failed, setFailed] = useState(false);
   const tile = scene
     ? 5
@@ -27,16 +32,20 @@ export function ProductMedia({
   if (tile === null || failed)
     return (
       <div className="product-photo fallback">
-        <div role="img" aria-label={`${name} — image unavailable`}>
+        <div role="img" aria-label={t('{name} — image unavailable', { name: label ?? name })}>
           <span aria-hidden="true" style={{ fontSize: 48 }}>
             ◇
           </span>
-          <p>Product image unavailable</p>
+          <p>{t('Product image unavailable')}</p>
         </div>
       </div>
     );
   return (
-    <div className="product-photo" role="img" aria-label={`${name} — AI-generated sample image`}>
+    <div
+      className="product-photo"
+      role="img"
+      aria-label={t('{name} — AI-generated sample image', { name: label ?? name })}
+    >
       {/* Optimized at build time: one shared 54 KB WebP atlas; no image client runtime. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
