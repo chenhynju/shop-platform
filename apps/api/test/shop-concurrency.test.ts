@@ -1,5 +1,5 @@
 // 并发防超卖测试（需要真实 Redis：跑测试前设置 REDIS_URL）
-// 例：$env:REDIS_URL='redis://170.106.161.82:16379'; pnpm --filter @repo/api test
+// 例：$env:REDIS_URL='redis://localhost:6379'; pnpm --filter @repo/api test
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { prisma } from '@repo/db';
 import { buildApp } from '../src/app';
