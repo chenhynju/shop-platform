@@ -15,12 +15,15 @@ model User {
   role String @default("USER")
   sessions Session[]
   projects Project[]
+  merchantMemberships MerchantMembership[]
+  platformMembership PlatformMembership?
 }
 model Session {
   id String @id @default(cuid())
   tokenHash String @unique
   userId Int
   expiresAt DateTime
+  audience String @default("customer")
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId])
   @@index([expiresAt])
@@ -49,6 +52,11 @@ model Product {
   createdAt   DateTime @default(now())
   inventory   Inventory?
   orderItems  OrderItem[]
+  storeId     Int?
+  store       Store? @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  merchantId  Int?
+  merchant    Merchant? @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  @@index([merchantId, createdAt])
 }
 
 model Inventory {
@@ -81,8 +89,11 @@ model OrderItem {
   name      String
   price     Int // 下单时价格快照（分）
   quantity  Int
+  merchantId Int?
+  fulfillmentStatus String @default("PENDING")
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product @relation(fields: [productId], references: [id])
+  @@index([merchantId, orderId])
 }
 
 model Promotion {
@@ -102,4 +113,49 @@ model Payment {
   status    String   @default("CREATED") // CREATED | SUCCESS | FAILED
   paidAt    DateTime?
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Merchant {
+  id Int @id @default(autoincrement())
+  name String
+  status String @default("ACTIVE")
+  createdAt DateTime @default(now())
+  stores Store[]
+  members MerchantMembership[]
+  products Product[]
+}
+model Store {
+  id Int @id @default(autoincrement())
+  merchantId Int
+  name String
+  status String @default("ACTIVE")
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  products Product[]
+  @@index([merchantId])
+}
+model MerchantMembership {
+  id Int @id @default(autoincrement())
+  userId Int
+  merchantId Int
+  role String @default("OWNER")
+  active Boolean @default(true)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  @@unique([userId, merchantId])
+}
+model PlatformMembership {
+  userId Int @id
+  role String @default("VIEWER")
+  active Boolean @default(true)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+model CommerceAudit {
+  id Int @id @default(autoincrement())
+  actorId Int
+  audience String
+  merchantId Int?
+  action String
+  target String
+  createdAt DateTime @default(now())
+  @@index([merchantId, createdAt])
 }

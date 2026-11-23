@@ -32,6 +32,8 @@ export default async function ShopLayout({ children }: { children: ReactNode }) 
           </div>
           <div>
             <h2>{t('Good to know')}</h2>
+            <a href="/seller">{t('Merchant center')}</a>
+            <a href="/admin">{t('Platform administration')}</a>
             <a href="/shop/guide">{t('Shopping guide')}</a>
             <p>
               {t('Sample prices in CNY.')} <br />

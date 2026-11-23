@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { prisma, type PrismaClient } from '@repo/db';
 import { readConfig } from './lib/config';
 import { AppError } from './lib/errors';
-import { SESSION_COOKIE, tokenHash } from './lib/auth';
+import { requestAudience, sessionCookie, tokenHash } from './lib/auth';
 import { authRoutes } from './routes/auth';
 import { userRoutes } from './routes/users';
 import { projectRoutes } from './routes/projects';
@@ -14,6 +14,8 @@ import { shopProductRoutes } from './routes/shop-products';
 import { shopCartRoutes } from './routes/shop-cart';
 import { shopOrderRoutes } from './routes/shop-orders';
 import { shopPromotionRoutes } from './routes/shop-promotions';
+import { portalRoutes } from './routes/portals';
+import { shopMerchantRoutes } from './routes/shop-merchant';
 export async function buildApp(
   options: { db?: PrismaClient; env?: NodeJS.ProcessEnv; logger?: boolean } = {}
 ) {
@@ -53,13 +55,15 @@ export async function buildApp(
       )
         throw new AppError(403, 'CSRF_REJECTED', 'Request origin could not be verified.');
     }
-    const token = req.cookies[SESSION_COOKIE];
+    const audience = requestAudience(req);
+    const token = req.cookies[sessionCookie(audience)];
     if (token && /^[a-f0-9]{64}$/.test(token)) {
       const session = await db.session.findUnique({
         where: { tokenHash: tokenHash(token) },
         include: { user: true }
       });
-      if (session && session.expiresAt > new Date()) req.currentUser = session.user;
+      if (session && session.audience === audience && session.expiresAt > new Date())
+        req.currentUser = session.user;
     }
   });
   app.setErrorHandler((error, req, reply) => {
@@ -116,5 +120,7 @@ export async function buildApp(
   await app.register(shopCartRoutes, { db });
   await app.register(shopOrderRoutes, { db });
   await app.register(shopPromotionRoutes, { db });
+  await app.register(shopMerchantRoutes, { db });
+  await app.register(portalRoutes, { db, config });
   return app;
 }

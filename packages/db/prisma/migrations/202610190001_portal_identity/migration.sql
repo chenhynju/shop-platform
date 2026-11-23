@@ -1,0 +1,17 @@
+ALTER TABLE "Session" ADD COLUMN "audience" TEXT NOT NULL DEFAULT 'customer';
+CREATE TABLE "Merchant" ("id" SERIAL PRIMARY KEY, "name" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT 'ACTIVE', "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE "Store" ("id" SERIAL PRIMARY KEY, "merchantId" INTEGER NOT NULL REFERENCES "Merchant"("id") ON DELETE RESTRICT, "name" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT 'ACTIVE');
+CREATE INDEX "Store_merchantId_idx" ON "Store"("merchantId");
+CREATE TABLE "MerchantMembership" ("id" SERIAL PRIMARY KEY, "userId" INTEGER NOT NULL REFERENCES "User"("id") ON DELETE RESTRICT, "merchantId" INTEGER NOT NULL REFERENCES "Merchant"("id") ON DELETE RESTRICT, "role" TEXT NOT NULL DEFAULT 'OWNER', "active" BOOLEAN NOT NULL DEFAULT true);
+CREATE UNIQUE INDEX "MerchantMembership_userId_merchantId_key" ON "MerchantMembership"("userId", "merchantId");
+CREATE TABLE "PlatformMembership" ("userId" INTEGER PRIMARY KEY REFERENCES "User"("id") ON DELETE RESTRICT, "role" TEXT NOT NULL DEFAULT 'VIEWER', "active" BOOLEAN NOT NULL DEFAULT true);
+CREATE TABLE "CommerceAudit" ("id" SERIAL PRIMARY KEY, "actorId" INTEGER NOT NULL, "audience" TEXT NOT NULL, "merchantId" INTEGER, "action" TEXT NOT NULL, "target" TEXT NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX "CommerceAudit_merchantId_createdAt_idx" ON "CommerceAudit"("merchantId", "createdAt");
+INSERT INTO "Merchant" ("id", "name") SELECT "id", COALESCE("name", "email") FROM "User" WHERE "role" = 'MERCHANT' OR "id" IN (SELECT "merchantId" FROM "Product" WHERE "merchantId" IS NOT NULL);
+INSERT INTO "Store" ("merchantId", "name") SELECT "id", "name" FROM "Merchant";
+INSERT INTO "MerchantMembership" ("userId", "merchantId") SELECT "id", "id" FROM "Merchant";
+SELECT setval(pg_get_serial_sequence('"Merchant"', 'id'), COALESCE((SELECT MAX("id") FROM "Merchant"), 1), EXISTS(SELECT 1 FROM "Merchant"));
+ALTER TABLE "Product" DROP CONSTRAINT "Product_merchantId_fkey";
+ALTER TABLE "Product" ADD CONSTRAINT "Product_merchantId_fkey" FOREIGN KEY ("merchantId") REFERENCES "Merchant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD COLUMN "storeId" INTEGER REFERENCES "Store"("id") ON DELETE RESTRICT;
+UPDATE "Product" p SET "storeId" = s."id" FROM "Store" s WHERE p."merchantId" = s."merchantId";
