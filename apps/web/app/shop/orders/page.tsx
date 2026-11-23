@@ -82,15 +82,15 @@ export default function OrdersPage() {
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">HELLOWORLDA STORE</p>
+          <p className="market-kicker">YOUR ACCOUNT / PURCHASES</p>
           <h1>Your orders</h1>
           <p className="subtitle">
             Newest first. Pay pending orders with the mock gateway or cancel them to return stock.
           </p>
         </div>
-        <span className="foundation-tag">
-          <span /> Store / 03
-        </span>
+        <Link className="market-back" href="/shop">
+          Continue shopping →
+        </Link>
       </div>
       {Boolean(error) && (
         <div role="alert" className="message error">

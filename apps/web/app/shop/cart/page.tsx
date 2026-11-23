@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocale } from '@/components/locale-provider';
 import { ShopLogin } from '@/components/shop-login';
+import { ProductMedia } from '@/components/product-media';
+import { productHref } from '@/lib/catalog';
 import { api, RequestError } from '@/lib/api';
 import { localizeError } from '@/lib/localize-error';
 import { CART_CHANGED_EVENT, describePromotion, estimatePromoTotal, formatCents } from '@/lib/shop';
@@ -124,15 +126,15 @@ export default function CartPage() {
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">HELLOWORLDA STORE</p>
+          <p className="market-kicker">YOUR SHOPPING BAG</p>
           <h1>Your cart</h1>
           <p className="subtitle">
             Quantities update instantly. Stock is reserved when you place the order.
           </p>
         </div>
-        <span className="foundation-tag">
-          <span /> Store / 02
-        </span>
+        <Link className="market-back" href="/shop">
+          Continue shopping →
+        </Link>
       </div>
       {Boolean(error) && (
         <div role="alert" className="message error">
@@ -178,7 +180,16 @@ export default function CartPage() {
                     return (
                       <tr key={row.item.sku}>
                         <td className="cart-product">
-                          <strong>{row.product.name}</strong>
+                          <Link
+                            className="market-cart-image"
+                            href={productHref(row.item.sku)}
+                            aria-label={`View ${row.product.name}`}
+                          >
+                            <ProductMedia name={row.product.name} />
+                          </Link>
+                          <strong>
+                            <Link href={productHref(row.item.sku)}>{row.product.name}</Link>
+                          </strong>
                           <span className="product-sku">{row.item.sku}</span>
                         </td>
                         <td>{formatCents(row.product.price)}</td>
@@ -223,6 +234,7 @@ export default function CartPage() {
             </div>
           </section>
           <aside className="shop-panel cart-summary" aria-label="Order summary">
+            <h2>Order summary</h2>
             <div className="summary-row">
               <span>Subtotal</span>
               <span>{formatCents(subtotal)}</span>
